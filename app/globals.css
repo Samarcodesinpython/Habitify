@@ -1,0 +1,268 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 280 30% 97%;
+    --foreground: 240 10% 20%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 20%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 20%;
+
+    --primary: 280 50% 75%;
+    --primary-foreground: 240 10% 20%;
+
+    --secondary: 150 40% 83%;
+    --secondary-foreground: 240 10% 20%;
+
+    --muted: 300 20% 94%;
+    --muted-foreground: 240 5% 40%;
+
+    --accent: 30 80% 85%;
+    --accent-foreground: 240 10% 20%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 300 20% 90%;
+    --input: 300 20% 90%;
+    --ring: 280 50% 75%;
+
+    --radius: 1rem;
+
+    /* Custom pastel colors */
+    --violet: 280 50% 75%;
+    --violet-light: 280 50% 85%;
+    --violet-dark: 280 50% 65%;
+    --mint: 150 40% 83%;
+    --peach: 30 80% 85%;
+    --ivory: 40 80% 96%;
+    --rose: 350 100% 92%;
+  }
+
+  .dark {
+    --background: 240 10% 10%;
+    --foreground: 0 0% 95%;
+
+    --card: 240 10% 13%;
+    --card-foreground: 0 0% 95%;
+
+    --popover: 240 10% 13%;
+    --popover-foreground: 0 0% 95%;
+
+    --primary: 280 40% 65%;
+    --primary-foreground: 0 0% 98%;
+
+    --secondary: 150 30% 70%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 240 10% 20%;
+    --muted-foreground: 240 5% 65%;
+
+    --accent: 30 70% 75%;
+    --accent-foreground: 0 0% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 95%;
+
+    --border: 240 10% 20%;
+    --input: 240 10% 20%;
+    --ring: 280 40% 65%;
+
+    /* Custom pastel colors - darker variants */
+    --violet: 280 40% 65%;
+    --violet-light: 280 40% 75%;
+    --violet-dark: 280 40% 55%;
+    --mint: 150 30% 70%;
+    --peach: 30 70% 75%;
+    --ivory: 40 30% 90%;
+    --rose: 350 70% 80%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer components {
+  .habit-card {
+    @apply relative flex items-center rounded-xl p-4 transition-all duration-300 hover:shadow-md;
+  }
+
+  .habit-card-violet {
+    @apply bg-[hsl(var(--violet))]/20;
+  }
+
+  .habit-card-mint {
+    @apply bg-[hsl(var(--mint))]/20;
+  }
+
+  .habit-card-peach {
+    @apply bg-[hsl(var(--peach))]/20;
+  }
+
+  .habit-card-rose {
+    @apply bg-[hsl(var(--rose))]/20;
+  }
+
+  .tab-button {
+    @apply rounded-full px-6 py-2 font-medium transition-colors;
+  }
+
+  .tab-button-active {
+    @apply bg-background text-foreground;
+  }
+
+  .tab-button-inactive {
+    @apply text-muted-foreground hover:bg-muted/50;
+  }
+
+  .day-circle {
+    @apply flex h-10 w-10 items-center justify-center rounded-full border border-border transition-all;
+  }
+
+  .day-circle-active {
+    @apply bg-primary text-primary-foreground;
+  }
+
+  .day-circle-inactive {
+    @apply bg-transparent hover:bg-muted;
+  }
+
+  .streak-dot {
+    @apply h-6 w-6 rounded-full cursor-pointer transition-all duration-200 flex items-center justify-center;
+  }
+
+  .streak-dot-empty {
+    @apply bg-muted hover:bg-muted/80;
+  }
+
+  .streak-dot-completed {
+    @apply bg-[hsl(var(--violet))] text-white hover:bg-[hsl(var(--violet-dark))];
+  }
+
+  .streak-dot-missed {
+    @apply bg-rose/50 hover:bg-rose/70;
+  }
+
+  .streak-dot-future {
+    @apply bg-muted/50 cursor-default;
+  }
+
+  .timer-progress {
+    @apply transition-all duration-300;
+    stroke: url(#timer-gradient);
+    stroke-linecap: round;
+  }
+
+  .timer-container {
+    @apply relative flex items-center justify-center;
+  }
+
+  .timer-container.active .timer-pulse {
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0% {
+      transform: scale(1);
+      opacity: 1;
+    }
+    50% {
+      transform: scale(1.05);
+      opacity: 0.8;
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  .swipe-action {
+    @apply absolute inset-y-0 right-0 flex items-center justify-center px-4 bg-green-500 text-white rounded-r-xl transform translate-x-full transition-transform duration-200;
+  }
+
+  .habit-item {
+    @apply relative overflow-hidden;
+  }
+
+  .habit-item.swiping .swipe-action {
+    @apply translate-x-0;
+  }
+
+  .habit-item.completed {
+    @apply animate-slideRight;
+  }
+
+  .month-divider {
+    @apply h-px bg-border my-4;
+  }
+
+  .month-label {
+    @apply text-sm font-medium text-muted-foreground mb-2;
+  }
+
+  .streak-calendar {
+    @apply space-y-6;
+  }
+
+  .streak-week {
+    @apply flex gap-1;
+  }
+
+  .streak-month {
+    @apply space-y-2;
+  }
+
+  /* Focus mode styles */
+  .focus-timer {
+    @apply relative flex items-center justify-center;
+  }
+
+  .focus-timer-circle {
+    @apply h-64 w-64 rounded-full border-8 border-primary/20 flex items-center justify-center;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, rgba(var(--violet-rgb) / 0.2) 100%);
+    box-shadow: 0 0 30px rgba(var(--violet-rgb) / 0.2);
+  }
+
+  .focus-timer-inner {
+    @apply flex flex-col items-center justify-center;
+  }
+
+  .focus-timer-time {
+    @apply text-5xl font-bold;
+  }
+
+  .focus-timer-label {
+    @apply text-lg text-muted-foreground;
+  }
+
+  .focus-controls {
+    @apply flex items-center justify-center gap-4 mt-8;
+  }
+
+  .focus-button {
+    @apply rounded-full h-14 w-14 flex items-center justify-center transition-all duration-300;
+  }
+
+  .focus-button-primary {
+    @apply bg-primary text-primary-foreground hover:bg-primary/90;
+  }
+
+  .focus-button-secondary {
+    @apply bg-secondary text-secondary-foreground hover:bg-secondary/90;
+  }
+
+  .focus-button-outline {
+    @apply border border-border bg-background hover:bg-muted;
+  }
+}
