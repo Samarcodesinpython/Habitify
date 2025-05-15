@@ -19,10 +19,14 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
 import { Dumbbell, BookOpen, Coffee, Brain, Heart, Droplet } from "lucide-react"
+import type { Habit } from "@/components/habit-list"
 
-export function AddHabitDialog({ children }: { children: React.ReactNode }) {
+export function AddHabitDialog({ setHabits }: { setHabits: React.Dispatch<React.SetStateAction<Habit[]>> }) {
   const [open, setOpen] = useState(false)
   const [selectedDays, setSelectedDays] = useState<string[]>(["mon", "tue", "wed", "thu", "fri"])
+  const [title, setTitle] = useState("")
+  const [icon, setIcon] = useState(<Dumbbell className="h-5 w-5" />)
+  const [color, setColor] = useState("violet")
 
   const toggleDay = (day: string) => {
     if (selectedDays.includes(day)) {
@@ -42,9 +46,29 @@ export function AddHabitDialog({ children }: { children: React.ReactNode }) {
     { key: "sun", label: "S" },
   ]
 
+  const handleSave = () => {
+    if (!title) return
+    setHabits(habits => [
+      ...habits,
+      {
+        id: Date.now().toString(),
+        title,
+        icon,
+        completed: false,
+        color: color as Habit["color"],
+      },
+    ])
+    setTitle("")
+    setOpen(false)
+  }
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{children}</DialogTrigger>
+      <DialogTrigger asChild>
+        <button className="fixed bottom-8 right-8 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-lg hover:bg-primary/90 focus:outline-none">
+          <span className="text-3xl">+</span>
+        </button>
+      </DialogTrigger>
       <DialogContent className="sm:max-w-[425px] rounded-2xl">
         <DialogHeader>
           <DialogTitle>Add New Habit</DialogTitle>
@@ -53,7 +77,7 @@ export function AddHabitDialog({ children }: { children: React.ReactNode }) {
         <div className="grid gap-4 py-4">
           <div className="grid gap-2">
             <Label htmlFor="title">Habit Name</Label>
-            <Input id="title" placeholder="e.g., Morning Meditation" className="rounded-xl" />
+            <Input id="title" placeholder="e.g., Morning Meditation" className="rounded-xl" value={title} onChange={e => setTitle(e.target.value)} />
           </div>
           <div className="grid gap-2">
             <Label htmlFor="icon">Icon</Label>
@@ -132,11 +156,7 @@ export function AddHabitDialog({ children }: { children: React.ReactNode }) {
           </div>
         </div>
         <DialogFooter>
-          <Button
-            type="submit"
-            onClick={() => setOpen(false)}
-            className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
-          >
+          <Button type="button" onClick={handleSave} className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90">
             Save Habit
           </Button>
         </DialogFooter>

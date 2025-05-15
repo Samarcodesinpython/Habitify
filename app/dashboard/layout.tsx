@@ -126,17 +126,6 @@ export default function DashboardLayout({
         <Sidebar />
         <main className="flex-1 p-4 md:p-6 pb-20 md:pb-6">{children}</main>
       </div>
-      <div className="fixed bottom-20 right-6 z-40 md:bottom-6">
-        <AddHabitDialog>
-          <Button
-            size="lg"
-            className="h-14 w-14 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 p-0 shadow-lg"
-          >
-            <Plus className="h-6 w-6" />
-            <span className="sr-only">Add new habit</span>
-          </Button>
-        </AddHabitDialog>
-      </div>
       <MobileNav />
     </div>
   )

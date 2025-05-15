@@ -1,6 +1,7 @@
 "use client"
 
 import type React from "react"
+import type { Task } from "@/components/task-list"
 
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -302,7 +303,7 @@ export default function TasksPage() {
                   <CardDescription>Tasks related to {category} problems</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <TaskList tasks={tasks} onToggle={handleTaskToggle} />
+                  <TaskList tasks={tasks as Task[]} onToggle={handleTaskToggle} />
                 </CardContent>
               </Card>
             ))
@@ -334,7 +335,7 @@ export default function TasksPage() {
                 <CardDescription>Tasks you're currently working on</CardDescription>
               </CardHeader>
               <CardContent>
-                <TaskList tasks={filteredTasks} onToggle={handleTaskToggle} />
+                <TaskList tasks={filteredTasks as Task[]} onToggle={handleTaskToggle} />
               </CardContent>
             </Card>
           )}
@@ -359,7 +360,7 @@ export default function TasksPage() {
                 <CardDescription>Tasks you have completed</CardDescription>
               </CardHeader>
               <CardContent>
-                <TaskList tasks={filteredTasks} onToggle={handleTaskToggle} />
+                <TaskList tasks={filteredTasks as Task[]} onToggle={handleTaskToggle} />
               </CardContent>
             </Card>
           )}

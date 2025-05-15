@@ -6,149 +6,61 @@ import { useState } from "react"
 import { AlarmClockIcon as Alarm, SpaceIcon as Yoga, Check, X } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import type { Habit } from "@/components/habit-list"
 
-type Habit = {
-  id: string
-  title: string
-  icon: React.ReactNode
-  completed: boolean
-  streaks: Record<string, StreakMonth[]>
-}
+const MONTHS_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 
-type StreakMonth = {
-  month: string
-  days: StreakDay[]
-}
-
-type StreakDay = {
-  date: string
-  status: "completed" | "missed" | "empty" | "future"
-}
-
-export function HabitOverallView() {
-  // Generate streak data for the current and past months
-  const generateStreakData = () => {
-    const months = ["January", "February", "March", "April", "May", "June"]
-    const streakData: Record<string, StreakMonth[]> = {}
-
-    const habits = ["Wake up early", "Stretching", "Balanced Breakfast"]
-
-    habits.forEach((habit) => {
-      streakData[habit] = months.map((month) => {
-        // Generate between 28-31 days per month
-        const daysInMonth = month === "February" ? 28 : [4, 6, 9, 11].includes(months.indexOf(month)) ? 30 : 31
-
-        return {
-          month,
-          days: Array.from({ length: daysInMonth }, (_, i) => {
-            // Current date for comparison
-            const today = new Date()
-            const currentMonth = today.getMonth()
-            const currentDay = today.getDate()
-            const monthIndex = months.indexOf(month)
-
-            // If this day is in the future
-            if (monthIndex > currentMonth || (monthIndex === currentMonth && i + 1 > currentDay)) {
-              return {
-                date: `${month} ${i + 1}`,
-                status: "future",
-              }
-            }
-
-            // Random status for past days
-            const rand = Math.random()
-            let status: "completed" | "missed" | "empty"
-
-            if (rand < 0.7) {
-              status = "completed"
-            } else if (rand < 0.9) {
-              status = "missed"
-            } else {
-              status = "empty"
-            }
-
-            return {
-              date: `${month} ${i + 1}`,
-              status,
-            }
-          }),
-        }
-      })
-    })
-
-    return streakData
-  }
-
-  const [streakData] = useState(generateStreakData())
-  const [habits] = useState([
-    {
-      id: "1",
-      title: "Wake up early",
-      icon: <Alarm className="h-5 w-5" />,
-      completed: true,
-    },
-    {
-      id: "2",
-      title: "Stretching",
-      icon: <Yoga className="h-5 w-5" />,
-      completed: true,
-    },
-    {
-      id: "3",
-      title: "Balanced Breakfast",
-      icon: <span className="text-lg">🍳</span>,
-      completed: false,
-    },
-  ])
-
-  // Function to group days into weeks
-  const groupIntoWeeks = (days: StreakDay[]) => {
-    const weeks: StreakDay[][] = []
-    for (let i = 0; i < days.length; i += 7) {
-      weeks.push(days.slice(i, i + 7))
+function getMonthGrid() {
+  const today = new Date()
+  const months: { label: string; year: number; month: number; days: string[] }[] = []
+  for (let i = 0; i < 12; i++) {
+    const year = today.getFullYear() - (today.getMonth() < i ? 1 : 0)
+    const month = i
+    const label = MONTHS_LABELS[i]
+    const daysInMonth = new Date(year, month + 1, 0).getDate()
+    const days: string[] = []
+    for (let d = 0; d < daysInMonth; d++) {
+      const dayDate = new Date(year, month, d + 1)
+      days.push(dayDate.toISOString().slice(0, 10))
     }
-    return weeks
+    months.push({ label, year, month, days })
   }
+  return months
+}
 
+export function HabitOverallView({ habits = [] }: { habits: Habit[] }) {
+  const months = getMonthGrid()
   return (
     <div className="space-y-8">
       <TooltipProvider>
         {habits.map((habit) => (
-          <div key={habit.id} className="space-y-3">
-            <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">{habit.icon}</div>
-              <h3 className="font-medium">{habit.title}</h3>
-              <Badge variant="outline" className="ml-auto">
-                {habit.completed ? "Active" : "Inactive"}
-              </Badge>
+          <div key={habit.id} className="bg-white rounded-2xl shadow-md p-4 space-y-3">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-lg">{habit.icon}</div>
+              <span className="font-medium text-base">{habit.title}</span>
             </div>
-
-            <div className="streak-calendar">
-              {streakData[habit.title]?.map((monthData, monthIndex) => (
-                <div key={monthIndex} className="streak-month">
-                  <div className="month-label">{monthData.month}</div>
-
-                  {groupIntoWeeks(monthData.days).map((week, weekIndex) => (
-                    <div key={weekIndex} className="streak-week">
-                      {week.map((day, dayIndex) => (
-                        <Tooltip key={dayIndex}>
+            <div className="flex items-end flex-wrap gap-4">
+              {months.map((month, mi) => (
+                <div key={mi} className="flex flex-col items-center">
+                  <div className="text-xs text-muted-foreground mb-1">{month.label}</div>
+                  <div className="grid grid-cols-7 gap-0.5">
+                    {month.days.map((dateStr, di) => {
+                      const completed = habit.completionDates?.includes(dateStr)
+                      return (
+                        <Tooltip key={dateStr}>
                           <TooltipTrigger asChild>
-                            <div className={`streak-dot streak-dot-${day.status}`}>
-                              {day.status === "completed" && <Check className="h-3 w-3" />}
-                              {day.status === "missed" && <X className="h-3 w-3" />}
-                            </div>
+                            <div
+                              className={`w-3 h-3 rounded-full border flex items-center justify-center transition-colors ${completed ? "bg-teal-500 border-teal-500" : "bg-gray-200 border-gray-200"}`}
+                            ></div>
                           </TooltipTrigger>
                           <TooltipContent>
-                            <p>
-                              {day.date}: {day.status}
-                            </p>
+                            <span>{dateStr}</span>
+                            {completed ? <span> – Completed</span> : null}
                           </TooltipContent>
                         </Tooltip>
-                      ))}
-                    </div>
-                  ))}
-
-                  {monthIndex < streakData[habit.title].length - 1 && <div className="month-divider"></div>}
+                      )
+                    })}
+                  </div>
                 </div>
               ))}
             </div>

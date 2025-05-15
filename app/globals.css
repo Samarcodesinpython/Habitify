@@ -36,12 +36,12 @@
 
     /* Custom pastel colors */
     --violet: 280 50% 75%;
-    --violet-light: 280 50% 85%;
+    --violet-light: 280 50% 88%;
     --violet-dark: 280 50% 65%;
-    --mint: 150 40% 83%;
-    --peach: 30 80% 85%;
+    --mint: 150 40% 80%;
+    --peach: 30 80% 82%;
     --ivory: 40 80% 96%;
-    --rose: 350 100% 92%;
+    --rose: 350 100% 88%;
   }
 
   .dark {
@@ -89,7 +89,8 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply text-foreground;
+    background-color: hsl(var(--violet-light));
   }
 }
 
@@ -264,5 +265,22 @@
 
   .focus-button-outline {
     @apply border border-border bg-background hover:bg-muted;
+  }
+
+  .habit-card-sm {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    min-height: 2.5rem;
+  }
+  .habit-item-sm {
+    margin-bottom: 0.5rem;
+  }
+  @keyframes checkmark-pop {
+    0% { transform: scale(0.7); opacity: 0.5; }
+    60% { transform: scale(1.2); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .animate-checkmark {
+    animation: checkmark-pop 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   }
 }

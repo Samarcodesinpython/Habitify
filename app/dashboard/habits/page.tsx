@@ -1,3 +1,7 @@
+"use client"
+import { useState } from "react"
+import type { Habit } from "@/components/habit-list"
+import { AddHabitDialog } from "@/components/add-habit-dialog"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { HabitList } from "@/components/habit-list"
@@ -5,6 +9,7 @@ import { HabitWeeklyView } from "@/components/habit-weekly-view"
 import { HabitOverallView } from "@/components/habit-overall-view"
 
 export default function HabitsPage() {
+  const [habits, setHabits] = useState<Habit[]>([])
   return (
     <div className="flex flex-col gap-4 pb-16 md:pb-0">
       <div className="flex flex-col gap-2">
@@ -22,10 +27,11 @@ export default function HabitsPage() {
           <Card>
             <CardHeader className="pb-2">
               <CardTitle>Today&apos;s Habits</CardTitle>
-              <CardDescription>You have 7 habits scheduled for today</CardDescription>
+              <CardDescription>You have {habits.length} habits scheduled for today</CardDescription>
             </CardHeader>
             <CardContent>
-              <HabitList />
+              <HabitList habits={habits} setHabits={setHabits} />
+              <AddHabitDialog setHabits={setHabits} />
             </CardContent>
           </Card>
         </TabsContent>
@@ -36,7 +42,7 @@ export default function HabitsPage() {
               <CardDescription>Track your habits throughout the week</CardDescription>
             </CardHeader>
             <CardContent>
-              <HabitWeeklyView />
+              <HabitWeeklyView habits={habits} setHabits={setHabits} />
             </CardContent>
           </Card>
         </TabsContent>
@@ -47,7 +53,7 @@ export default function HabitsPage() {
               <CardDescription>View your long-term habit progress</CardDescription>
             </CardHeader>
             <CardContent>
-              <HabitOverallView />
+              <HabitOverallView habits={habits} />
             </CardContent>
           </Card>
         </TabsContent>

@@ -6,67 +6,23 @@ import { useState, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Check, AlarmClockIcon as Alarm, Sun, Droplet, Phone, Dumbbell, SpaceIcon as Yoga } from "lucide-react"
 
-type Habit = {
+export type Habit = {
   id: string
   title: string
   icon: React.ReactNode
   completed: boolean
   color: "violet" | "mint" | "peach" | "rose"
+  days?: { [key: string]: boolean }
+  frequency?: string
+  completionDates?: string[]
 }
 
-export function HabitList() {
-  const [habits, setHabits] = useState<Habit[]>([
-    {
-      id: "1",
-      title: "Wake up early",
-      icon: <Alarm className="h-5 w-5" />,
-      completed: false,
-      color: "violet",
-    },
-    {
-      id: "2",
-      title: "Stretching",
-      icon: <Yoga className="h-5 w-5" />,
-      completed: false,
-      color: "violet",
-    },
-    {
-      id: "3",
-      title: "Balanced Breakfast",
-      icon: <span className="text-lg">🍳</span>,
-      completed: true,
-      color: "violet",
-    },
-    {
-      id: "4",
-      title: "Sunlight Exposure",
-      icon: <Sun className="h-5 w-5" />,
-      completed: false,
-      color: "violet",
-    },
-    {
-      id: "5",
-      title: "Quick Workout",
-      icon: <Dumbbell className="h-5 w-5" />,
-      completed: false,
-      color: "mint",
-    },
-    {
-      id: "6",
-      title: "Hydration",
-      icon: <Droplet className="h-5 w-5" />,
-      completed: false,
-      color: "mint",
-    },
-    {
-      id: "7",
-      title: "Call Mom Daily",
-      icon: <Phone className="h-5 w-5" />,
-      completed: false,
-      color: "mint",
-    },
-  ])
+interface HabitListProps {
+  habits: Habit[]
+  setHabits: React.Dispatch<React.SetStateAction<Habit[]>>
+}
 
+export function HabitList({ habits = [], setHabits }: HabitListProps) {
   // For touch/swipe functionality
   const [swipingId, setSwipingId] = useState<string | null>(null)
   const touchStartX = useRef<number | null>(null)
@@ -130,60 +86,56 @@ export function HabitList() {
     setSwipingId(null)
   }
 
+  // Complete all habits
+  const completeAllHabits = () => {
+    setHabits(habits.map(habit => ({ ...habit, completed: true })))
+  }
+
+  // Skip all habits
+  const skipAllHabits = () => {
+    setHabits([])
+  }
+
   return (
     <div className="space-y-3">
+      <div className="flex gap-2 mb-2">
+        <Button size="sm" className="rounded-xl" onClick={completeAllHabits}>Complete All Habits</Button>
+        <Button size="sm" variant="outline" className="rounded-xl" onClick={skipAllHabits}>Skip All</Button>
+      </div>
       {habits.map((habit) => (
         <div
           key={habit.id}
-          className={`habit-item ${habit.completed ? "completed" : ""} ${swipingId === habit.id ? "swiping" : ""}`}
+          className={`habit-item-sm habit-item ${habit.completed ? "completed" : ""} ${swipingId === habit.id ? "swiping" : ""}`}
           onTouchStart={(e) => onTouchStart(e, habit.id)}
           onTouchMove={(e) => onTouchMove(e, habit.id)}
           onTouchEnd={(e) => onTouchEnd(e, habit.id)}
         >
-          <div className={`habit-card ${habit.completed ? "habit-card-mint" : `habit-card-${habit.color}`} group`}>
+          <div className={`habit-card habit-card-sm ${habit.completed ? "habit-card-mint" : `habit-card-${habit.color}`} group`}>
             {habit.completed ? (
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-mint text-white">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-mint text-white animate-checkmark">
                 <Check className="h-5 w-5" />
               </div>
             ) : (
               <div className="flex h-8 w-8 items-center justify-center">{habit.icon}</div>
             )}
-            <span className="ml-3 flex-1 font-medium">{habit.title}</span>
-
+            <span className="ml-3 flex-1 font-medium text-sm">{habit.title}</span>
             <div className="flex items-center gap-2 opacity-0 transition-opacity group-hover:opacity-100">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 w-8 rounded-full p-0"
-                onClick={() => toggleHabit(habit.id)}
-              >
+              <Button variant="ghost" size="sm" className="h-8 w-8 rounded-full p-0" onClick={() => toggleHabit(habit.id)}>
                 <Check className="h-4 w-4" />
                 <span className="sr-only">Complete</span>
               </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 w-8 rounded-full p-0"
-                onClick={() => skipHabit(habit.id)}
-              >
+              <Button variant="ghost" size="sm" className="h-8 w-8 rounded-full p-0" onClick={() => skipHabit(habit.id)}>
                 <span className="sr-only">Skip</span>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="m9 18 6-6-6-6" />
-                </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>
+              </Button>
+              <Button variant="ghost" size="sm" className="h-8 w-8 rounded-full p-0" onClick={() => {/* edit handler */}}>
+                <span role="img" aria-label="Edit">✏️</span>
+              </Button>
+              <Button variant="ghost" size="sm" className="h-8 w-8 rounded-full p-0" onClick={() => setHabits(habits.filter(h => h.id !== habit.id))}>
+                <span role="img" aria-label="Delete">🗑️</span>
               </Button>
             </div>
           </div>
-
           <div className="swipe-action">
             <Check className="h-5 w-5" />
           </div>

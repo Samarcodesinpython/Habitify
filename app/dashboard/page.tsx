@@ -1,12 +1,20 @@
+"use client"
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { HabitList } from "@/components/habit-list"
 import { MotivationalQuote } from "@/components/motivational-quote"
 import Link from "next/link"
 import { ArrowRight } from "lucide-react"
+import { useAuth } from "@/components/auth-provider"
+import { useState } from "react"
+import type { Habit } from "@/components/habit-list"
+import { AddHabitDialog } from "@/components/add-habit-dialog"
 
 export default function DashboardPage() {
-  const userName = "Alex" // In a real app, this would come from authentication
+  const { user } = useAuth()
+  const userName = user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Alex"
+  const [habits, setHabits] = useState<Habit[]>([])
 
   return (
     <div className="flex flex-col gap-6 pb-16 md:pb-0">
@@ -20,7 +28,7 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between">
             <div>
               <CardTitle>Today's Habits</CardTitle>
-              <CardDescription>You have 7 habits scheduled for today</CardDescription>
+              <CardDescription>You have {habits.length} habits scheduled for today</CardDescription>
             </div>
             <Link href="/dashboard/habits">
               <Button variant="ghost" size="sm" className="rounded-xl gap-1">
@@ -30,7 +38,8 @@ export default function DashboardPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <HabitList />
+          <HabitList habits={habits} setHabits={setHabits} />
+          <AddHabitDialog setHabits={setHabits} />
         </CardContent>
       </Card>
 

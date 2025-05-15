@@ -10,7 +10,7 @@ import { getClientSupabaseInstance } from "@/lib/supabase"
 import { useAuth } from "@/components/auth-provider"
 import { useToast } from "@/hooks/use-toast"
 
-type Task = {
+export type Task = {
   id: string
   title: string
   description: string
