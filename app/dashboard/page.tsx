@@ -61,8 +61,8 @@ export default function DashboardPage() {
                 <svg className="h-full w-full" viewBox="0 0 100 100">
                   <defs>
                     <linearGradient id="streak-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="hsl(var(--violet-light))" />
-                      <stop offset="100%" stopColor="hsl(var(--violet-dark))" />
+                      <stop offset="0%" stopColor="hsl(var(--primary))" />
+                      <stop offset="100%" stopColor="hsl(var(--primary))" />
                     </linearGradient>
                   </defs>
                   <circle className="stroke-muted" cx="50" cy="50" r="40" fill="none" strokeWidth="8" />

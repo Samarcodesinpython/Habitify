@@ -30,19 +30,40 @@ export default function AnalyticsPage() {
       const thirtyDaysAgo = new Date()
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
 
-      const { data, error } = await supabase
-        .from("analytics")
-        .select("*")
-        .eq("user_id", user.id)
-        .gte("date", thirtyDaysAgo.toISOString().split("T")[0])
-        .order("date", { ascending: true })
+      // Dummy data for the last 30 days
+      const dummyData = Array.from({ length: 30 }).map((_, index) => {
+        const date = new Date()
+        date.setDate(date.getDate() - (29 - index))
+        return {
+          id: index + 1,
+          user_id: user.id,
+          date: date.toISOString().split('T')[0],
+          habits_completed: Math.floor(Math.random() * 5) + (index > 15 ? Math.floor(index / 5) : 0), // Increasing trend for habits
+          habits_total: Math.min(5, Math.floor(Math.random() * 6) + (index > 10 ? Math.floor(index / 7) : 0)), // Increasing trend for total habits
+          tasks_completed: Math.floor(Math.random() * 8) + (index > 10 ? Math.floor(index / 4) : 0), // Increasing trend for tasks
+          tasks_total: Math.min(10, Math.floor(Math.random() * 12) + (index > 8 ? Math.floor(index / 5) : 0)), // Increasing trend for total tasks
+          focus_time: Math.floor(Math.random() * 3600) + (index > 5 ? index * 60 : 0), // Increasing trend for focus time (in seconds)
+          focus_sessions: Math.floor(Math.random() * 3) + (index > 10 ? Math.floor(index / 8) : 0), // Increasing trend for focus sessions
+          productivity_score: Math.floor(Math.random() * 60) + (index > 10 ? Math.floor(index * 2) : 0), // Increasing trend for productivity score
+          created_at: new Date().toISOString(),
+        };
+      });
 
-      if (error) {
-        console.error("Error fetching analytics data:", JSON.stringify(error))
-        return
-      }
+      setAnalyticsData(dummyData)
 
-      setAnalyticsData(data || [])
+      // const { data, error } = await supabase
+      //   .from("analytics")
+      //   .select("*")
+      //   .eq("user_id", user.id)
+      //   .gte("date", thirtyDaysAgo.toISOString().split("T")[0])
+      //   .order("date", { ascending: true })
+
+      // if (error) {
+      //   console.error("Error fetching analytics data:", JSON.stringify(error))
+      //   return
+      // }
+
+      // setAnalyticsData(data || [])
     } catch (error) {
       console.error("Error fetching analytics data:", JSON.stringify(error))
     } finally {

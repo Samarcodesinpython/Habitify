@@ -33,6 +33,8 @@ export default function FocusPage() {
   const { toast } = useToast()
   const supabase = getClientSupabaseInstance()
   const audioRef = useRef<HTMLAudioElement | null>(null)
+  const [isIdeaPadOpen, setIsIdeaPadOpen] = useState(false)
+  const [ideaPadContent, setIdeaPadContent] = useState("")
 
   useEffect(() => {
     // Create audio element for sound effects
@@ -303,6 +305,38 @@ export default function FocusPage() {
     })
   }
 
+  const handleEnergyClick = () => {
+    setIsIdeaPadOpen(true)
+  }
+
+  const handleSaveIdeaPad = () => {
+    // Here you would typically save the ideaPadContent to state, local storage, or a database.
+    // For this implementation, we'll just close the modal and show a confirmation toast.
+    console.log("Idea saved:", ideaPadContent)
+    toast({
+      title: "Idea Saved!",
+      description: "Your thought has been noted down.",
+    })
+    setIdeaPadContent("") // Clear content after saving
+    setIsIdeaPadOpen(false)
+  }
+
+  const handleNightClick = () => {
+    toast({
+      title: "Wind Down Time",
+      description: "Take a deep breath and relax your shoulders.",
+    })
+    // You could add more complex logic here later, e.g., link to resources.
+  }
+
+  const handleDayClick = () => {
+    toast({
+      title: "Morning Kickstart",
+      description: "Ready to seize the day? Let's go!",
+    })
+    // You could add more complex logic here later, e.g., link to a planning tool.
+  }
+
   const getTimerColor = () => {
     const progress = (time / initialTime) * 100;
     if (isBreak) {
@@ -361,6 +395,24 @@ export default function FocusPage() {
             </DialogContent>
           </Dialog>
         </div>
+
+        {/* Idea Pad Modal */}
+        <Dialog open={isIdeaPadOpen} onOpenChange={setIsIdeaPadOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Idea Pad</DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <Input
+                placeholder="Jot down your thoughts..."
+                value={ideaPadContent}
+                onChange={(e) => setIdeaPadContent(e.target.value)}
+              />
+              <Button onClick={handleSaveIdeaPad}>Save Idea</Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
@@ -383,8 +435,8 @@ export default function FocusPage() {
                       r="90"
                       fill="none"
                       strokeWidth="8"
-                      strokeDasharray="565.48"
-                      strokeDashoffset={565.48 * (time / initialTime)}
+                      strokeDasharray={`${565.48 * (initialTime - time) / initialTime}, ${565.48 - (565.48 * (initialTime - time) / initialTime)}`}
+                      strokeDashoffset={0}
                       stroke={getTimerColor()}
                       transform="rotate(-90 100 100)"
                     />
@@ -445,52 +497,55 @@ export default function FocusPage() {
           
           <a href="https://leetcode.com/" target="_blank" rel="noopener noreferrer"
              className="flex flex-col items-center justify-center p-6 rounded-xl transition-all duration-300 hover:scale-105 hover:bg-orange-300"
-             style={{ backgroundColor: 'rgb(255, 223, 186)' }}>
+             style={{ backgroundColor: 'rgb(250, 213, 171)' }}>
             <img src="/icons/LeetCode_Logo_black_with_text.svg" alt="LeetCode" className="h-30 w-30 mb-2" />
             <span className="text-sm font-medium"></span>
           </a>
 
           <a href="https://github.com/" target="_blank" rel="noopener noreferrer"
              className="flex flex-col items-center justify-center p-6 rounded-xl transition-all duration-300 hover:scale-105 hover:bg-purple-300"
-             style={{ backgroundColor: 'rgb(221, 160, 221)' }}>
+             style={{ backgroundColor: 'rgb(239, 173, 251)' }}>
             <img src="/icons/GitHub_Invertocat_Logo.svg" alt="GitHub" className="h-12 w-12  mb-2" />
             <span className="text-sm font-medium">GitHub</span>
           </a>
 
           <div className="flex flex-col items-center justify-center p-6 rounded-xl transition-all duration-300 hover:scale-105 cursor-pointer hover:bg-blue-300"
-               style={{ backgroundColor: 'rgb(176, 224, 230)' }}>
+               style={{ backgroundColor: 'rgb(164, 223, 223)' }}>
             <Target className="h-8 w-8 mb-2" />
-            <span className="text-sm font-medium">{cycles * Number.parseInt(focusTime)} min</span>
+            <span className="text-sm font-medium">Today's Focus: {cycles * Number.parseInt(focusTime)} min</span>
           </div>
 
           <div className="flex flex-col items-center justify-center p-6 rounded-xl transition-all duration-300 hover:scale-105 cursor-pointer hover:bg-indigo-300"
-               style={{ backgroundColor: 'rgb(197, 179, 228)' }}
+               style={{ backgroundColor: 'rgb(222, 188, 255)' }}
                onClick={handleStudyClick}>
             <BookOpen className="h-8 w-8 mb-2" />
             <span className="text-sm font-medium">Study</span>
           </div>
 
           <div className="flex flex-col items-center justify-center p-6 rounded-xl transition-all duration-300 hover:scale-105 cursor-pointer hover:bg-amber-300"
-               style={{ backgroundColor: 'rgb(255, 228, 181)' }}
+               style={{ backgroundColor: 'rgb(232, 132, 211)' }}
                onClick={handleBreakClick}>
             <Coffee className="h-8 w-8 mb-2" />
             <span className="text-sm font-medium">Break</span>
           </div>
 
           <div className="flex flex-col items-center justify-center p-6 rounded-xl transition-all duration-300 hover:scale-105 cursor-pointer hover:bg-yellow-300"
-               style={{ backgroundColor: 'rgb(255, 250, 205)' }}>
+               style={{ backgroundColor: 'rgb(249, 175, 175)' }}
+               onClick={handleEnergyClick}>
             <Zap className="h-8 w-8 mb-2" />
             <span className="text-sm font-medium">Energy</span>
           </div>
 
           <div className="flex flex-col items-center justify-center p-6 rounded-xl transition-all duration-300 hover:scale-105 cursor-pointer hover:bg-slate-300"
-               style={{ backgroundColor: 'rgb(220, 220, 220)' }}>
+               style={{ backgroundColor: 'rgb(178, 176, 176)' }}
+               onClick={handleNightClick}>
             <Moon className="h-8 w-8 mb-2" />
             <span className="text-sm font-medium">Night</span>
           </div>
 
           <div className="flex flex-col items-center justify-center p-6 rounded-xl transition-all duration-300 hover:scale-105 cursor-pointer hover:bg-orange-300"
-               style={{ backgroundColor: 'rgb(255, 223, 186)' }}>
+               style={{ backgroundColor: 'rgb(250, 234, 184)' }}
+               onClick={handleDayClick}>
             <Sun className="h-8 w-8 mb-2" />
             <span className="text-sm font-medium">Day</span>
           </div>
