@@ -9,7 +9,6 @@ import { ArrowRight } from "lucide-react"
 import { useAuth } from "@/components/auth-provider"
 import { useState } from "react"
 import type { Habit } from "@/components/habit-list"
-import { AddHabitDialog } from "@/components/add-habit-dialog"
 
 export default function DashboardPage() {
   const { user } = useAuth()
@@ -39,7 +38,6 @@ export default function DashboardPage() {
         </CardHeader>
         <CardContent>
           <HabitList habits={habits} setHabits={setHabits} />
-          <AddHabitDialog setHabits={setHabits} />
         </CardContent>
       </Card>
 
@@ -140,7 +138,7 @@ export default function DashboardPage() {
         <CardContent>
           <div className="flex items-center justify-between">
             {["M", "T", "W", "T", "F", "S", "S"].map((day, index) => (
-              <div key={day} className="flex flex-col items-center">
+              <div key={index} className="flex flex-col items-center">
                 <div className="text-sm font-medium text-muted-foreground">{day}</div>
                 <div
                   className={`mt-2 h-16 w-4 rounded-full ${

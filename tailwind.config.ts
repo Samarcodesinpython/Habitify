@@ -53,6 +53,13 @@ const config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        sidebar: {
+          background: "hsl(var(--sidebar-background))",
+          foreground: "hsl(var(--sidebar-foreground))",
+        },
+        topbar: {
+          background: "hsl(var(--topbar-background))",
+        },
         // Custom pastel colors
         violet: "hsl(var(--violet))",
         mint: "hsl(var(--mint))",

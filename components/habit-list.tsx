@@ -2,9 +2,11 @@
 
 import type React from "react"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Check, AlarmClockIcon as Alarm, Sun, Droplet, Phone, Dumbbell, SpaceIcon as Yoga } from "lucide-react"
+import { useAuth } from "@/components/auth-provider"
+import { updateHabit, deleteHabit, markHabitComplete, unmarkHabitComplete, getHabitCompletions } from "@/lib/habitsApi"
 
 export type Habit = {
   id: string
@@ -22,34 +24,55 @@ interface HabitListProps {
   setHabits: React.Dispatch<React.SetStateAction<Habit[]>>
 }
 
+function mapDbHabitToUiHabit(dbHabit: any): Habit {
+  return {
+    id: dbHabit.id,
+    title: dbHabit.name,
+    icon: <span role="img" aria-label="Habit">🏷️</span>,
+    completed: dbHabit.completed ?? false,
+    color: (dbHabit.color as Habit["color"]) || "violet",
+    days: dbHabit.days,
+    frequency: dbHabit.frequency,
+    completionDates: dbHabit.completionDates,
+  }
+}
+
 export function HabitList({ habits = [], setHabits }: HabitListProps) {
+  const { user } = useAuth();
   // For touch/swipe functionality
   const [swipingId, setSwipingId] = useState<string | null>(null)
   const touchStartX = useRef<number | null>(null)
   const touchEndX = useRef<number | null>(null)
   const minSwipeDistance = 50
 
-  const toggleHabit = (id: string) => {
-    setHabits(
-      habits.map((habit) => {
-        if (habit.id === id) {
-          return { ...habit, completed: !habit.completed }
-        }
-        return habit
-      }),
-    )
+  // On mount or when habits change, fetch completions for today
+  useEffect(() => {
+    if (!user || habits.length === 0) return;
+    const today = new Date().toISOString().slice(0, 10);
+    Promise.all(habits.map(async (habit) => {
+      const completions = await getHabitCompletions(habit.id);
+      return { ...habit, completed: completions.includes(today) };
+    })).then(setHabits);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, habits.length]);
 
-    // If completing via swipe, add a delay before removing
-    if (swipingId === id) {
-      setTimeout(() => {
-        setHabits(habits.filter((habit) => habit.id !== id))
-      }, 500)
+  const toggleHabit = async (id: string) => {
+    if (!user) return;
+    const today = new Date().toISOString().slice(0, 10);
+    const habit = habits.find(h => h.id === id);
+    if (!habit) return;
+    if (habit.completed) {
+      await unmarkHabitComplete(id, today);
+    } else {
+      await markHabitComplete(id, today);
     }
+    setHabits(habits.map(h => h.id === id ? { ...h, completed: !h.completed } : h));
   }
 
-  const skipHabit = (id: string) => {
-    // In a real app, this would mark the habit as skipped for the day
-    setHabits(habits.filter((habit) => habit.id !== id))
+  const skipHabit = async (id: string) => {
+    if (!user) return;
+    await deleteHabit(id);
+    setHabits(habits.filter((habit) => habit.id !== id));
   }
 
   const onTouchStart = (e: React.TouchEvent, id: string) => {
@@ -87,13 +110,19 @@ export function HabitList({ habits = [], setHabits }: HabitListProps) {
   }
 
   // Complete all habits
-  const completeAllHabits = () => {
-    setHabits(habits.map(habit => ({ ...habit, completed: true })))
+  const completeAllHabits = async () => {
+    if (!user) return;
+    const today = new Date().toISOString().slice(0, 10);
+    await Promise.all(habits.map(habit => markHabitComplete(habit.id, today)));
+    setHabits(habits.map(habit => ({ ...habit, completed: true })));
   }
 
   // Skip all habits
-  const skipAllHabits = () => {
-    setHabits([])
+  const skipAllHabits = async () => {
+    if (!user) return;
+    const today = new Date().toISOString().slice(0, 10);
+    await Promise.all(habits.map(habit => unmarkHabitComplete(habit.id, today)));
+    setHabits(habits.map(habit => ({ ...habit, completed: false })));
   }
 
   return (

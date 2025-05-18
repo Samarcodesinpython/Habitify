@@ -38,13 +38,13 @@ export default function AnalyticsPage() {
         .order("date", { ascending: true })
 
       if (error) {
-        console.error("Error fetching analytics data:", error)
+        console.error("Error fetching analytics data:", JSON.stringify(error))
         return
       }
 
       setAnalyticsData(data || [])
     } catch (error) {
-      console.error("Error fetching analytics data:", error)
+      console.error("Error fetching analytics data:", JSON.stringify(error))
     } finally {
       setIsLoading(false)
     }

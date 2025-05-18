@@ -20,8 +20,24 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch"
 import { Dumbbell, BookOpen, Coffee, Brain, Heart, Droplet } from "lucide-react"
 import type { Habit } from "@/components/habit-list"
+import { useAuth } from "@/components/auth-provider"
+import { addHabit } from "@/lib/habitsApi"
+
+function mapDbHabitToUiHabit(dbHabit: any): Habit {
+  return {
+    id: dbHabit.id,
+    title: dbHabit.name,
+    icon: <span role="img" aria-label="Habit">🏷️</span>,
+    completed: dbHabit.completed ?? false,
+    color: (dbHabit.color as Habit["color"]) || "violet",
+    days: dbHabit.days,
+    frequency: dbHabit.frequency,
+    completionDates: dbHabit.completionDates,
+  }
+}
 
 export function AddHabitDialog({ setHabits }: { setHabits: React.Dispatch<React.SetStateAction<Habit[]>> }) {
+  const { user } = useAuth();
   const [open, setOpen] = useState(false)
   const [selectedDays, setSelectedDays] = useState<string[]>(["mon", "tue", "wed", "thu", "fri"])
   const [title, setTitle] = useState("")
@@ -46,20 +62,12 @@ export function AddHabitDialog({ setHabits }: { setHabits: React.Dispatch<React.
     { key: "sun", label: "S" },
   ]
 
-  const handleSave = () => {
-    if (!title) return
-    setHabits(habits => [
-      ...habits,
-      {
-        id: Date.now().toString(),
-        title,
-        icon,
-        completed: false,
-        color: color as Habit["color"],
-      },
-    ])
-    setTitle("")
-    setOpen(false)
+  const handleSave = async () => {
+    if (!title || !user) return;
+    const dbHabit = await addHabit(user.id, { name: title, color });
+    setHabits(habits => [mapDbHabitToUiHabit(dbHabit), ...habits]);
+    setTitle("");
+    setOpen(false);
   }
 
   return (

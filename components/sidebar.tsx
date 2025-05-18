@@ -2,7 +2,6 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { BarChart3, CheckCircle2, Home, Settings, Clock } from "lucide-react"
 
 export function Sidebar() {
   const pathname = usePathname()
@@ -12,7 +11,7 @@ export function Sidebar() {
   }
 
   return (
-    <aside className="hidden w-64 flex-col border-r bg-background/50 backdrop-blur supports-[backdrop-filter]:bg-background/30 md:flex">
+    <aside className="hidden w-64 flex-col border-r bg-sidebar-background text-sidebar-foreground md:flex">
       <div className="flex flex-col gap-2 p-4">
         <div className="py-2 text-sm font-medium">Main</div>
         <nav className="flex flex-col gap-1">
@@ -24,7 +23,6 @@ export function Sidebar() {
                 : "text-muted-foreground hover:bg-muted hover:text-foreground"
             }`}
           >
-            <Home className="h-4 w-4" />
             Dashboard
           </Link>
           <Link
@@ -35,7 +33,6 @@ export function Sidebar() {
                 : "text-muted-foreground hover:bg-muted hover:text-foreground"
             }`}
           >
-            <CheckCircle2 className="h-4 w-4" />
             Tasks
           </Link>
           <Link
@@ -46,7 +43,6 @@ export function Sidebar() {
                 : "text-muted-foreground hover:bg-muted hover:text-foreground"
             }`}
           >
-            <CheckCircle2 className="h-4 w-4" />
             Habits
           </Link>
           <Link
@@ -57,7 +53,6 @@ export function Sidebar() {
                 : "text-muted-foreground hover:bg-muted hover:text-foreground"
             }`}
           >
-            <Clock className="h-4 w-4" />
             Focus Mode
           </Link>
           <Link
@@ -68,7 +63,6 @@ export function Sidebar() {
                 : "text-muted-foreground hover:bg-muted hover:text-foreground"
             }`}
           >
-            <BarChart3 className="h-4 w-4" />
             Analytics
           </Link>
         </nav>
@@ -82,7 +76,6 @@ export function Sidebar() {
                 : "text-muted-foreground hover:bg-muted hover:text-foreground"
             }`}
           >
-            <Settings className="h-4 w-4" />
             Settings
           </Link>
         </nav>

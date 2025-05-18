@@ -4,7 +4,7 @@
 
 @layer base {
   :root {
-    --background: 280 30% 97%;
+    --background: 0 0% 100%;
     --foreground: 240 10% 20%;
 
     --card: 0 0% 100%;
@@ -35,52 +35,149 @@
     --radius: 1rem;
 
     /* Custom pastel colors */
-    --violet: 280 50% 75%;
+    --violet: 280 50% 95%;
     --violet-light: 280 50% 88%;
     --violet-dark: 280 50% 65%;
-    --mint: 150 40% 80%;
-    --peach: 30 80% 82%;
+    --mint: 150 40% 95%;
+    --peach: 30 80% 95%;
     --ivory: 40 80% 96%;
-    --rose: 350 100% 88%;
+    --rose: 350 100% 95%;
+
+    /* Default Sidebar and Top bar colors */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 240 10% 20%;
+    --topbar-background: 0 0% 100%;
+
+    /* Sidebar specific colors for accent variations */
+    /* --sidebar-violet: 280 30% 95%; */
+    /* --sidebar-mint: 150 30% 95%; */
+    /* --sidebar-peach: 30 30% 95%; */
+    /* --sidebar-rose: 350 30% 95%; */
+
+    /* Top bar specific colors for accent variations */
+    /* --topbar-violet: 280 30% 98%; */
+    /* --topbar-mint: 150 30% 98%; */
+    /* --topbar-peach: 30 30% 98%; */
+    /* --topbar-rose: 350 30% 98%; */
+  }
+
+  /* Accent color variations */
+  [data-accent="violet"] {
+    --primary: 280 50% 75%;
+    --primary-foreground: 0 0% 98%;
+    --ring: 280 50% 75%;
+    --background: 280 30% 85%;
+    --sidebar-background: 280 30% 92%;
+    --topbar-background: 280 30% 98%;
+  }
+
+  [data-accent="mint"] {
+    --primary: 160 100% 60%;
+    --primary-foreground: 0 0% 98%;
+    --ring: 160 100% 60%;
+    --background: 160 30% 85%;
+    --sidebar-background: 160 30% 92%;
+    --topbar-background: 160 30% 98%;
+  }
+
+  [data-accent="peach"] {
+    --primary: 20 100% 60%;
+    --primary-foreground: 0 0% 98%;
+    --ring: 20 100% 60%;
+    --background: 20 30% 85%;
+    --sidebar-background: 20 30% 92%;
+    --topbar-background: 20 30% 98%;
+  }
+
+  [data-accent="rose"] {
+    --primary: 330 100% 70%;
+    --primary-foreground: 0 0% 98%;
+    --ring: 330 100% 70%;
+    --background: 330 30% 85%;
+    --sidebar-background: 330 30% 92%;
+    --topbar-background: 330 30% 98%;
   }
 
   .dark {
-    --background: 240 10% 10%;
+    --background: 265 60% 3%;
     --foreground: 0 0% 95%;
 
-    --card: 240 10% 13%;
+    --card: 265 60% 12%;
     --card-foreground: 0 0% 95%;
 
-    --popover: 240 10% 13%;
+    --popover: 265 60% 13%;
     --popover-foreground: 0 0% 95%;
 
-    --primary: 280 40% 65%;
+    --primary: 265 100% 65%;
     --primary-foreground: 0 0% 98%;
 
-    --secondary: 150 30% 70%;
+    --secondary: 265 80% 40%;
     --secondary-foreground: 0 0% 98%;
 
-    --muted: 240 10% 20%;
-    --muted-foreground: 240 5% 65%;
+    --muted: 265 40% 20%;
+    --muted-foreground: 265 60% 80%;
 
-    --accent: 30 70% 75%;
+    --accent: 290 100% 60%;
     --accent-foreground: 0 0% 98%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 95%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
 
-    --border: 240 10% 20%;
-    --input: 240 10% 20%;
-    --ring: 280 40% 65%;
+    --border: 265 60% 25%;
+    --input: 265 60% 25%;
+    --ring: 265 100% 65%;
 
-    /* Custom pastel colors - darker variants */
-    --violet: 280 40% 65%;
-    --violet-light: 280 40% 75%;
-    --violet-dark: 280 40% 55%;
-    --mint: 150 30% 70%;
-    --peach: 30 70% 75%;
-    --ivory: 40 30% 90%;
-    --rose: 350 70% 80%;
+    /* Custom neon colors for dark mode */
+    --violet: 265 100% 65%;
+    --violet-light: 265 100% 75%;
+    --violet-dark: 265 100% 45%;
+    --mint: 160 100% 60%;
+    --peach: 20 100% 60%;
+    --ivory: 60 30% 90%;
+    --rose: 330 100% 70%;
+
+    /* Sidebar specific colors for dark mode */
+    --sidebar-background: 265 60% 8%;
+    --sidebar-foreground: 0 0% 95%;
+    /* Top bar specific colors for dark mode */
+    --topbar-background: 265 60% 10%;
+  }
+
+  /* Dark mode accent color variations */
+  .dark[data-accent="violet"] {
+    --primary: 265 100% 65%;
+    --primary-foreground: 0 0% 98%;
+    --ring: 265 100% 65%;
+    --background: 265 60% 6%;
+    --sidebar-background: 265 60% 8%;
+    --topbar-background: 265 60% 10%;
+  }
+
+  .dark[data-accent="mint"] {
+    --primary: 160 100% 60%;
+    --primary-foreground: 0 0% 98%;
+    --ring: 160 100% 60%;
+    --background: 160 60% 6%;
+    --sidebar-background: 160 60% 8%;
+    --topbar-background: 160 60% 10%;
+  }
+
+  .dark[data-accent="peach"] {
+    --primary: 20 100% 60%;
+    --primary-foreground: 0 0% 98%;
+    --ring: 20 100% 60%;
+    --background: 20 60% 6%;
+    --sidebar-background: 20 60% 8%;
+    --topbar-background: 20 60% 10%;
+  }
+
+  .dark[data-accent="rose"] {
+    --primary: 330 100% 70%;
+    --primary-foreground: 0 0% 98%;
+    --ring: 330 100% 70%;
+    --background: 330 60% 6%;
+    --sidebar-background: 330 60% 8%;
+    --topbar-background: 330 60% 10%;
   }
 }
 
@@ -90,7 +187,7 @@
   }
   body {
     @apply text-foreground;
-    background-color: hsl(var(--violet-light));
+    background-color: hsl(var(--background));
   }
 }
 
@@ -174,18 +271,9 @@
   }
 
   @keyframes pulse {
-    0% {
-      transform: scale(1);
-      opacity: 1;
-    }
-    50% {
-      transform: scale(1.05);
-      opacity: 0.8;
-    }
-    100% {
-      transform: scale(1);
-      opacity: 1;
-    }
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.05); opacity: 0.8; }
+    100% { transform: scale(1); opacity: 1; }
   }
 
   .swipe-action {

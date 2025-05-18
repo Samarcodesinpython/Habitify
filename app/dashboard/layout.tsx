@@ -20,13 +20,14 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { getClientSupabaseInstance } from "@/lib/supabase"
+import { useAuth } from "@/components/auth-provider"
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const [user, setUser] = useState<any>(null)
+  const { user } = useAuth()
   const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
   const supabase = getClientSupabaseInstance()
@@ -44,7 +45,6 @@ export default function DashboardLayout({
         return
       }
 
-      setUser(session.user)
       setIsLoading(false)
     }
 
@@ -54,9 +54,8 @@ export default function DashboardLayout({
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_IN") {
-        setUser(session?.user ?? null)
+        setIsLoading(false)
       } else if (event === "SIGNED_OUT") {
-        setUser(null)
         router.push("/login")
       }
     })
@@ -84,10 +83,11 @@ export default function DashboardLayout({
   }
 
   const userInitial = user.user_metadata?.full_name?.[0] || user.email?.[0] || "U"
+  const userName = user.user_metadata?.full_name || user.email?.split("@")[0] || "User"
 
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-50 flex h-16 items-center gap-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 md:px-6">
+      <header className="sticky top-0 z-50 flex h-16 items-center gap-4 border-b bg-topbar-background backdrop-blur supports-[backdrop-filter]:bg-topbar-background/60 px-4 md:px-6">
         <Link href="/dashboard" className="flex items-center gap-2 font-semibold">
           <span className="text-primary">Habitify</span>
         </Link>
@@ -99,15 +99,15 @@ export default function DashboardLayout({
                 <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                   <Avatar className="h-8 w-8">
                     <AvatarImage
-                      src={user.user_metadata?.avatar_url || "/placeholder.svg?height=32&width=32"}
-                      alt={user.user_metadata?.full_name || "User"}
+                      src={user.user_metadata?.avatar_url}
+                      alt={userName}
                     />
                     <AvatarFallback className="bg-primary text-primary-foreground">{userInitial}</AvatarFallback>
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="rounded-xl">
-                <DropdownMenuLabel>{user.user_metadata?.full_name || user.email}</DropdownMenuLabel>
+                <DropdownMenuLabel>{userName}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
                   <Link href="/dashboard/profile">Profile</Link>

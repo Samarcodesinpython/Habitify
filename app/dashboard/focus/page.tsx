@@ -3,11 +3,13 @@
 import { useState, useEffect, useRef } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Play, Pause, RotateCcw, CheckCircle, Settings } from "lucide-react"
+import { Play, Pause, RotateCcw, CheckCircle, Settings, Link, Music, BookOpen, Coffee, Brain, Timer, Target, Zap, Moon, Sun } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
 import { getClientSupabaseInstance } from "@/lib/supabase"
 import { useAuth } from "@/components/auth-provider"
 import { useToast } from "@/hooks/use-toast"
@@ -25,6 +27,8 @@ export default function FocusPage() {
   const [breakTime, setBreakTime] = useState("5")
   const [soundTheme, setSoundTheme] = useState("rain")
   const [sessionId, setSessionId] = useState<string | null>(null)
+  const [customFocusTime, setCustomFocusTime] = useState("25")
+  const [customBreakTime, setCustomBreakTime] = useState("5")
   const { user } = useAuth()
   const { toast } = useToast()
   const supabase = getClientSupabaseInstance()
@@ -147,7 +151,7 @@ export default function FocusPage() {
         .single()
 
       if (error) {
-        console.error("Error creating focus session:", error)
+        console.error("Error creating focus session:", error.message, JSON.stringify(error))
         return null
       }
 
@@ -247,11 +251,116 @@ export default function FocusPage() {
     setBreakTime(value)
   }
 
+  const handleStudyClick = () => {
+    setFocusTime("60") // 1 hour
+    setBreakTime("10") // 10 minutes break
+    if (!isActive) {
+      setInitialTime(60 * 60) // 1 hour in seconds
+      setTime(60 * 60)
+    }
+    toast({
+      title: "Study Mode Activated",
+      description: "Focus timer set to 1 hour with 10-minute breaks",
+    })
+  }
+
+  const handleBreakClick = () => {
+    setFocusTime("10") // 10 minutes
+    setBreakTime("5") // 5 minutes break
+    if (!isActive) {
+      setInitialTime(10 * 60) // 10 minutes in seconds
+      setTime(10 * 60)
+    }
+    toast({
+      title: "Break Mode Activated",
+      description: "Focus timer set to 10 minutes with 5-minute breaks",
+    })
+  }
+
+  const handleCustomTimeSave = () => {
+    const focusMinutes = parseInt(customFocusTime)
+    const breakMinutes = parseInt(customBreakTime)
+    
+    if (isNaN(focusMinutes) || isNaN(breakMinutes) || focusMinutes <= 0 || breakMinutes <= 0) {
+      toast({
+        title: "Invalid Time",
+        description: "Please enter valid positive numbers for both focus and break times",
+        variant: "destructive"
+      })
+      return
+    }
+
+    setFocusTime(customFocusTime)
+    setBreakTime(customBreakTime)
+    if (!isActive) {
+      setInitialTime(focusMinutes * 60)
+      setTime(focusMinutes * 60)
+    }
+    
+    toast({
+      title: "Timer Settings Updated",
+      description: `Focus: ${focusMinutes}min, Break: ${breakMinutes}min`
+    })
+  }
+
+  const getTimerColor = () => {
+    const progress = (time / initialTime) * 100;
+    if (isBreak) {
+      // Pastel oranges/yellows for break
+      return progress > 66 ? "rgb(255, 218, 185)" : // Pastel Peach (lighter)
+             progress > 33 ? "rgb(255, 183, 119)" : // Pastel Orange (medium)
+             "rgb(255, 165, 0)"; // Orange (can adjust if too bright) (darker)
+    }
+    // Pastel blues for focus
+    return progress > 66 ? "rgb(173, 216, 230)" : // Pastel Light Blue (lighter)
+           progress > 33 ? "rgb(135, 206, 235)" : // Pastel Sky Blue (medium)
+           "rgb(100, 149, 237)"; // Pastel Cornflower Blue (darker)
+  }
+
   return (
     <div className="flex flex-col gap-6 pb-16 md:pb-0">
       <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold tracking-tight">Focus Mode</h1>
-        <p className="text-muted-foreground">Stay focused and productive with timed sessions</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Focus Mode</h1>
+            <p className="text-muted-foreground">Stay focused and productive with timed sessions</p>
+          </div>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="icon">
+                <Settings className="h-4 w-4" />
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Timer Settings</DialogTitle>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="focus-time">Focus Duration (minutes)</Label>
+                  <Input
+                    id="focus-time"
+                    type="number"
+                    min="1"
+                    value={customFocusTime}
+                    onChange={(e) => setCustomFocusTime(e.target.value)}
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="break-time">Break Duration (minutes)</Label>
+                  <Input
+                    id="break-time"
+                    type="number"
+                    min="1"
+                    value={customBreakTime}
+                    onChange={(e) => setCustomBreakTime(e.target.value)}
+                  />
+                </div>
+                <Button onClick={handleCustomTimeSave}>Save Settings</Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
@@ -268,14 +377,15 @@ export default function FocusPage() {
                 <div className="focus-timer-circle">
                   <svg className="absolute h-full w-full" viewBox="0 0 200 200">
                     <circle
-                      className="timer-progress"
+                      className="timer-progress transition-colors duration-1000"
                       cx="100"
                       cy="100"
                       r="90"
                       fill="none"
                       strokeWidth="8"
                       strokeDasharray="565.48"
-                      strokeDashoffset={565.48 - (565.48 * time) / initialTime}
+                      strokeDashoffset={565.48 * (time / initialTime)}
+                      stroke={getTimerColor()}
                       transform="rotate(-90 100 100)"
                     />
                   </svg>
@@ -325,178 +435,67 @@ export default function FocusPage() {
           </CardContent>
         </Card>
 
-        <Card className="rounded-2xl border-border shadow-md">
-          <CardHeader className="pb-2 flex flex-row items-center justify-between">
-            <div>
-              <CardTitle>Settings</CardTitle>
-              <CardDescription>Customize your focus session</CardDescription>
-            </div>
-            <Settings className="h-5 w-5 text-muted-foreground" />
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Tabs
-              defaultValue={focusMode}
-              value={focusMode}
-              onValueChange={(value) => setFocusMode(value as "pomodoro" | "custom")}
-              className="w-full"
-            >
-              <TabsList className="mb-4 rounded-xl">
-                <TabsTrigger value="pomodoro" className="rounded-lg">
-                  Pomodoro
-                </TabsTrigger>
-                <TabsTrigger value="custom" className="rounded-lg">
-                  Custom
-                </TabsTrigger>
-              </TabsList>
-              <TabsContent value="pomodoro" className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="rounded-xl bg-primary/10 p-4 text-center">
-                    <div className="text-lg font-medium mb-1">25:00</div>
-                    <div className="text-sm text-muted-foreground">Focus Time</div>
-                  </div>
-                  <div className="rounded-xl bg-secondary/10 p-4 text-center">
-                    <div className="text-lg font-medium mb-1">05:00</div>
-                    <div className="text-sm text-muted-foreground">Break Time</div>
-                  </div>
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  The Pomodoro Technique is a time management method that uses a timer to break work into intervals,
-                  traditionally 25 minutes in length, separated by short breaks.
-                </div>
-              </TabsContent>
-              <TabsContent value="custom" className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="focus-time">Focus Time</Label>
-                  <Select defaultValue={focusTime} value={focusTime} onValueChange={handleFocusTimeChange}>
-                    <SelectTrigger id="focus-time" className="rounded-xl">
-                      <SelectValue placeholder="Select focus time" />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-xl">
-                      <SelectItem value="15">15 minutes</SelectItem>
-                      <SelectItem value="25">25 minutes</SelectItem>
-                      <SelectItem value="30">30 minutes</SelectItem>
-                      <SelectItem value="45">45 minutes</SelectItem>
-                      <SelectItem value="60">60 minutes</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="break-time">Break Time</Label>
-                  <Select defaultValue={breakTime} value={breakTime} onValueChange={handleBreakTimeChange}>
-                    <SelectTrigger id="break-time" className="rounded-xl">
-                      <SelectValue placeholder="Select break time" />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-xl">
-                      <SelectItem value="5">5 minutes</SelectItem>
-                      <SelectItem value="10">10 minutes</SelectItem>
-                      <SelectItem value="15">15 minutes</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </TabsContent>
-            </Tabs>
+        <div className="grid grid-cols-3 gap-4">
+          <a href="https://open.spotify.com/" target="_blank" rel="noopener noreferrer" 
+             className="flex flex-col items-center justify-center p-6 rounded-xl transition-all duration-300 hover:scale-105 hover:bg-green-300"
+             style={{ backgroundColor: 'rgb(193, 222, 193)' }}>
+            <img src="/icons/Spotify_icon.svg" alt="Spotify" className="h-12 w-12 mb-2" />
+            <span className="text-sm font-medium">Spotify</span>
+          </a>
+          
+          <a href="https://leetcode.com/" target="_blank" rel="noopener noreferrer"
+             className="flex flex-col items-center justify-center p-6 rounded-xl transition-all duration-300 hover:scale-105 hover:bg-orange-300"
+             style={{ backgroundColor: 'rgb(255, 223, 186)' }}>
+            <img src="/icons/LeetCode_Logo_black_with_text.svg" alt="LeetCode" className="h-30 w-30 mb-2" />
+            <span className="text-sm font-medium"></span>
+          </a>
 
-            <div className="space-y-2">
-              <Label>Sound Theme</Label>
-              <div className="grid grid-cols-3 gap-2">
-                <Button
-                  variant="outline"
-                  className={`rounded-xl h-auto py-3 flex flex-col items-center gap-1 ${
-                    soundTheme === "rain" ? "bg-primary/10 border-primary/20" : ""
-                  }`}
-                  onClick={() => setSoundTheme("rain")}
-                >
-                  <span className="text-lg">🌧️</span>
-                  <span className="text-xs">Rain</span>
-                </Button>
-                <Button
-                  variant="outline"
-                  className={`rounded-xl h-auto py-3 flex flex-col items-center gap-1 ${
-                    soundTheme === "cafe" ? "bg-primary/10 border-primary/20" : ""
-                  }`}
-                  onClick={() => setSoundTheme("cafe")}
-                >
-                  <span className="text-lg">☕</span>
-                  <span className="text-xs">Café</span>
-                </Button>
-                <Button
-                  variant="outline"
-                  className={`rounded-xl h-auto py-3 flex flex-col items-center gap-1 ${
-                    soundTheme === "waves" ? "bg-primary/10 border-primary/20" : ""
-                  }`}
-                  onClick={() => setSoundTheme("waves")}
-                >
-                  <span className="text-lg">🌊</span>
-                  <span className="text-xs">Waves</span>
-                </Button>
-              </div>
-            </div>
+          <a href="https://github.com/" target="_blank" rel="noopener noreferrer"
+             className="flex flex-col items-center justify-center p-6 rounded-xl transition-all duration-300 hover:scale-105 hover:bg-purple-300"
+             style={{ backgroundColor: 'rgb(221, 160, 221)' }}>
+            <img src="/icons/GitHub_Invertocat_Logo.svg" alt="GitHub" className="h-12 w-12  mb-2" />
+            <span className="text-sm font-medium">GitHub</span>
+          </a>
 
-            <div className="flex items-center justify-between">
-              <Label>Sound Notifications</Label>
-              <Switch checked={soundEnabled} onCheckedChange={setSoundEnabled} />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card className="rounded-2xl border-border shadow-md">
-        <CardHeader className="pb-2">
-          <CardTitle>Focus Stats</CardTitle>
-          <CardDescription>Your focus session statistics</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="rounded-xl bg-primary/10 p-4 text-center">
-              <div className="text-2xl font-bold mb-1">{cycles}</div>
-              <div className="text-sm text-muted-foreground">Pomodoro Cycles</div>
-            </div>
-            <div className="rounded-xl bg-secondary/10 p-4 text-center">
-              <div className="text-2xl font-bold mb-1">{cycles * Number.parseInt(focusTime)} min</div>
-              <div className="text-sm text-muted-foreground">Focus Time Today</div>
-            </div>
-            <div className="rounded-xl bg-accent/10 p-4 text-center">
-              <div className="text-2xl font-bold mb-1">3</div>
-              <div className="text-sm text-muted-foreground">Tasks Completed</div>
-            </div>
+          <div className="flex flex-col items-center justify-center p-6 rounded-xl transition-all duration-300 hover:scale-105 cursor-pointer hover:bg-blue-300"
+               style={{ backgroundColor: 'rgb(176, 224, 230)' }}>
+            <Target className="h-8 w-8 mb-2" />
+            <span className="text-sm font-medium">{cycles * Number.parseInt(focusTime)} min</span>
           </div>
-        </CardContent>
-      </Card>
 
-      <Card className="rounded-2xl border-border shadow-md">
-        <CardHeader className="pb-2">
-          <CardTitle>Focus Tips</CardTitle>
-          <CardDescription>Tips to help you stay focused</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ul className="space-y-2">
-            <li className="flex items-start gap-2">
-              <div className="h-5 w-5 rounded-full bg-primary flex items-center justify-center mt-0.5">
-                <span className="text-xs font-bold">1</span>
-              </div>
-              <span>Remove distractions: silence your phone and close unnecessary tabs</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <div className="h-5 w-5 rounded-full bg-secondary flex items-center justify-center mt-0.5">
-                <span className="text-xs font-bold">2</span>
-              </div>
-              <span>Take short breaks between focus sessions to maintain productivity</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <div className="h-5 w-5 rounded-full bg-accent flex items-center justify-center mt-0.5">
-                <span className="text-xs font-bold">3</span>
-              </div>
-              <span>Stay hydrated and maintain good posture while working</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <div className="h-5 w-5 rounded-full bg-rose flex items-center justify-center mt-0.5">
-                <span className="text-xs font-bold">4</span>
-              </div>
-              <span>Use the Pomodoro technique: 25 minutes of focus, 5 minutes of rest</span>
-            </li>
-          </ul>
-        </CardContent>
-      </Card>
+          <div className="flex flex-col items-center justify-center p-6 rounded-xl transition-all duration-300 hover:scale-105 cursor-pointer hover:bg-indigo-300"
+               style={{ backgroundColor: 'rgb(197, 179, 228)' }}
+               onClick={handleStudyClick}>
+            <BookOpen className="h-8 w-8 mb-2" />
+            <span className="text-sm font-medium">Study</span>
+          </div>
+
+          <div className="flex flex-col items-center justify-center p-6 rounded-xl transition-all duration-300 hover:scale-105 cursor-pointer hover:bg-amber-300"
+               style={{ backgroundColor: 'rgb(255, 228, 181)' }}
+               onClick={handleBreakClick}>
+            <Coffee className="h-8 w-8 mb-2" />
+            <span className="text-sm font-medium">Break</span>
+          </div>
+
+          <div className="flex flex-col items-center justify-center p-6 rounded-xl transition-all duration-300 hover:scale-105 cursor-pointer hover:bg-yellow-300"
+               style={{ backgroundColor: 'rgb(255, 250, 205)' }}>
+            <Zap className="h-8 w-8 mb-2" />
+            <span className="text-sm font-medium">Energy</span>
+          </div>
+
+          <div className="flex flex-col items-center justify-center p-6 rounded-xl transition-all duration-300 hover:scale-105 cursor-pointer hover:bg-slate-300"
+               style={{ backgroundColor: 'rgb(220, 220, 220)' }}>
+            <Moon className="h-8 w-8 mb-2" />
+            <span className="text-sm font-medium">Night</span>
+          </div>
+
+          <div className="flex flex-col items-center justify-center p-6 rounded-xl transition-all duration-300 hover:scale-105 cursor-pointer hover:bg-orange-300"
+               style={{ backgroundColor: 'rgb(255, 223, 186)' }}>
+            <Sun className="h-8 w-8 mb-2" />
+            <span className="text-sm font-medium">Day</span>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
