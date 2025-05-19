@@ -1,6 +1,14 @@
+import axios from 'axios';
 import { Task } from "@/types/task"
 
-const API_BASE_URL = "http://localhost:8000/api"
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+
+const api = axios.create({
+  baseURL: API_BASE_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
 
 export interface ScheduleResponse {
   scheduled_tasks: Array<Task & {
@@ -13,69 +21,34 @@ export interface ScheduleResponse {
   efficiency_score: number
 }
 
-export const scheduleApi = {
-  // Greedy scheduling
-  greedySchedule: async (tasks: Task[]): Promise<ScheduleResponse> => {
-    const response = await fetch(`${API_BASE_URL}/greedy`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ tasks }),
-    })
-    if (!response.ok) throw new Error("Failed to schedule tasks")
-    return response.json()
+export const schedulingApi = {
+  // Greedy Scheduler
+  greedySchedule: async (data: any) => {
+    const response = await api.post('/greedy-schedule', data);
+    return response.data;
   },
 
-  // Topological sort scheduling
-  topologicalSchedule: async (tasks: Task[]): Promise<ScheduleResponse> => {
-    const response = await fetch(`${API_BASE_URL}/topological`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ tasks }),
-    })
-    if (!response.ok) throw new Error("Failed to schedule tasks")
-    return response.json()
+  // Topological Sort
+  topologicalSort: async (data: any) => {
+    const response = await api.post('/topological-sort', data);
+    return response.data;
   },
 
-  // Dynamic programming scheduling
-  dynamicSchedule: async (tasks: Task[]): Promise<ScheduleResponse> => {
-    const response = await fetch(`${API_BASE_URL}/dynamic`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ tasks }),
-    })
-    if (!response.ok) throw new Error("Failed to schedule tasks")
-    return response.json()
+  // Dynamic Programming
+  dynamicProgramming: async (data: any) => {
+    const response = await api.post('/dynamic-programming', data);
+    return response.data;
   },
 
-  // Dijkstra's algorithm scheduling
-  dijkstraSchedule: async (tasks: Task[]): Promise<ScheduleResponse> => {
-    const response = await fetch(`${API_BASE_URL}/dijkstra`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ tasks }),
-    })
-    if (!response.ok) throw new Error("Failed to schedule tasks")
-    return response.json()
+  // Dijkstra Scheduler
+  dijkstraSchedule: async (data: any) => {
+    const response = await api.post('/dijkstra-schedule', data);
+    return response.data;
   },
 
-  // Priority queue scheduling
-  prioritySchedule: async (tasks: Task[]): Promise<ScheduleResponse> => {
-    const response = await fetch(`${API_BASE_URL}/priority`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ tasks }),
-    })
-    if (!response.ok) throw new Error("Failed to schedule tasks")
-    return response.json()
+  // Priority Queue
+  priorityQueue: async (data: any) => {
+    const response = await api.post('/priority-queue', data);
+    return response.data;
   },
 } 

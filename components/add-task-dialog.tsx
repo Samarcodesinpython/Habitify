@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -21,11 +21,26 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { getClientSupabaseInstance } from "@/lib/supabase"
 import { useAuth } from "@/components/auth-provider"
 import { useToast } from "@/hooks/use-toast"
+import type { PostgrestError } from '@supabase/supabase-js'
 
 interface AddTaskDialogProps {
   children: React.ReactNode
   onTaskAdded?: () => void
 }
+
+type Task = {
+  id: string;
+  user_id: string;
+  title: string;
+  description: string;
+  category: string;
+  priority: string;
+  time_estimate: number;
+  energy_level: string;
+  due_date: string | null;
+  completed: boolean;
+  created_at: string;
+};
 
 export function AddTaskDialog({ children, onTaskAdded }: AddTaskDialogProps) {
   const [open, setOpen] = useState(false)
@@ -37,10 +52,26 @@ export function AddTaskDialog({ children, onTaskAdded }: AddTaskDialogProps) {
   const [energyLevel, setEnergyLevel] = useState("medium")
   const [dueDate, setDueDate] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [tasks, setTasks] = useState<Task[]>([])
+  const [fetchError, setFetchError] = useState<PostgrestError | null>(null)
 
   const { user } = useAuth()
   const supabase = getClientSupabaseInstance()
   const { toast } = useToast()
+
+  useEffect(() => {
+    if (!user) return
+    const fetchTasks = async () => {
+      const { data, error } = await supabase
+        .from('tasks')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+      if (error) setFetchError(error)
+      else setTasks(data)
+    }
+    fetchTasks()
+  }, [user])
 
   const handleSubmit = async () => {
     if (!title || !user) return
@@ -61,7 +92,7 @@ export function AddTaskDialog({ children, onTaskAdded }: AddTaskDialogProps) {
       })
 
       if (error) {
-        console.error("Error adding task:", error)
+        console.error("Error adding task:", error.message || error)
         toast({
           title: "Error",
           description: "Failed to add task. Please try again.",
@@ -148,6 +179,8 @@ export function AddTaskDialog({ children, onTaskAdded }: AddTaskDialogProps) {
     }
   }
 
+  if (!user) return;
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
@@ -175,11 +208,12 @@ export function AddTaskDialog({ children, onTaskAdded }: AddTaskDialogProps) {
                 <SelectValue placeholder="Select category" />
               </SelectTrigger>
               <SelectContent className="rounded-xl">
-                <SelectItem value="greedy">Greedy Algorithms</SelectItem>
-                <SelectItem value="dp">Dynamic Programming</SelectItem>
-                <SelectItem value="graphs">Graphs</SelectItem>
-                <SelectItem value="recursion">Recursion</SelectItem>
-                <SelectItem value="sorting">Sorting & Searching</SelectItem>
+                <SelectItem value="study">Study</SelectItem>
+                <SelectItem value="wellness">Wellness</SelectItem>
+                <SelectItem value="sports">Sports</SelectItem>
+                <SelectItem value="fitness">Fitness</SelectItem>
+                <SelectItem value="work">Work</SelectItem>
+                <SelectItem value="personal">Personal</SelectItem>
                 <SelectItem value="other">Other</SelectItem>
               </SelectContent>
             </Select>
