@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Task } from "@/types/task"
+import { Task, ScheduleResponse } from "@/types/task"
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
 
@@ -10,21 +10,10 @@ const api = axios.create({
   },
 });
 
-export interface ScheduleResponse {
-  scheduled_tasks: Array<Task & {
-    scheduled_start: string
-    scheduled_end: string
-    completion_status: string
-  }>
-  total_duration: number
-  makespan: number
-  efficiency_score: number
-}
-
 export const schedulingApi = {
-  // Greedy Scheduler
-  greedySchedule: async (data: any) => {
-    const response = await api.post('/greedy-schedule', data);
+  // Weighted Greedy Scheduler
+  greedySchedule: async (tasks: Task[]): Promise<ScheduleResponse> => {
+    const response = await api.post<ScheduleResponse>('/greedy', { tasks });
     return response.data;
   },
 
@@ -51,4 +40,6 @@ export const schedulingApi = {
     const response = await api.post('/priority-queue', data);
     return response.data;
   },
-} 
+}
+
+export type { Task, ScheduleResponse }; 

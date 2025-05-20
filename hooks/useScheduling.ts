@@ -1,36 +1,16 @@
 import { useState } from 'react';
-import { schedulingApi } from '@/lib/api';
-import { Task } from '@/types/task';
+import { schedulingApi, Task, ScheduleResponse } from '@/lib/api';
 
 export const useScheduling = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<ScheduleResponse | null>(null);
 
-  const scheduleTasks = async (algorithm: string, tasks: Task[]) => {
+  const scheduleTasks = async (tasks: Task[]) => {
     setLoading(true);
     setError(null);
     try {
-      let response;
-      switch (algorithm) {
-        case 'greedy':
-          response = await schedulingApi.greedySchedule({ tasks });
-          break;
-        case 'topological':
-          response = await schedulingApi.topologicalSort({ tasks });
-          break;
-        case 'dynamic':
-          response = await schedulingApi.dynamicProgramming({ tasks });
-          break;
-        case 'dijkstra':
-          response = await schedulingApi.dijkstraSchedule({ tasks });
-          break;
-        case 'priority':
-          response = await schedulingApi.priorityQueue({ tasks });
-          break;
-        default:
-          throw new Error('Invalid algorithm selected');
-      }
+      const response = await schedulingApi.greedySchedule(tasks);
       setResult(response);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
