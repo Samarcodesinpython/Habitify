@@ -5,10 +5,12 @@ from datetime import datetime
 class Task(BaseModel):
     id: str
     name: str
-    importance: int  # 1-5 scale
-    duration: int    # in minutes
-    dependencies: List[str]  # list of task IDs
-    deadline: datetime
+    priority: str  # 'high', 'medium', 'low'
+    time_estimate: int  # in minutes
+    energy_level: str  # 'high', 'medium', 'low'
+    description: Optional[str] = None
+    due_date: Optional[datetime] = None
+    completed: Optional[bool] = False
     start_time: Optional[datetime] = None
     end_time: Optional[datetime] = None
 
