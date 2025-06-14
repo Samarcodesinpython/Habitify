@@ -6,10 +6,72 @@ from .models import Task, ScheduleRequest, ScheduledTask, ScheduleResponse
 
 router = APIRouter()
 
+def greedy_job_scheduling(tasks: List[Task]) -> List[ScheduledTask]:
+    """
+    Greedy job scheduling algorithm that prioritizes tasks based on importance and deadline.
+    Uses a priority queue to schedule tasks optimally.
+    """
+    # Sort tasks by deadline and importance
+    sorted_tasks = sorted(tasks, key=lambda x: (x.deadline, -x.importance))
+    
+    current_time = datetime.now()
+    scheduled_tasks = []
+    
+    for task in sorted_tasks:
+        # Calculate start and end times
+        start_time = max(current_time, task.deadline - timedelta(minutes=task.duration))
+        end_time = start_time + timedelta(minutes=task.duration)
+        
+        # Check if task can be completed before deadline
+        if end_time > task.deadline:
+            continue  # Skip tasks that can't be completed before deadline
+            
+        scheduled_task = ScheduledTask(
+            id=task.id,
+            name=task.name,
+            start_time=start_time,
+            end_time=end_time,
+            importance=task.importance
+        )
+        scheduled_tasks.append(scheduled_task)
+        current_time = end_time
+    
+    return scheduled_tasks
+
+def activity_selection(tasks: List[Task]) -> List[ScheduledTask]:
+    """
+    Activity selection algorithm that maximizes the number of tasks completed
+    while considering their importance and duration.
+    """
+    # Sort tasks by end time (deadline) and importance
+    sorted_tasks = sorted(tasks, key=lambda x: (x.deadline, -x.importance))
+    
+    current_time = datetime.now()
+    scheduled_tasks = []
+    
+    for task in sorted_tasks:
+        # Check if task can be started now and completed before deadline
+        if current_time + timedelta(minutes=task.duration) <= task.deadline:
+            start_time = current_time
+            end_time = start_time + timedelta(minutes=task.duration)
+            
+            scheduled_task = ScheduledTask(
+                id=task.id,
+                name=task.name,
+                start_time=start_time,
+                end_time=end_time,
+                importance=task.importance
+            )
+            scheduled_tasks.append(scheduled_task)
+            current_time = end_time
+    
+    return scheduled_tasks
+
 @router.post("/priority", response_model=ScheduleResponse)
 async def priority_schedule(request: ScheduleRequest):
     """
     Priority queue-based scheduling that considers task importance and deadlines.
+    Uses both greedy job scheduling and activity selection algorithms.
     
     Sample payload:
     {
@@ -34,77 +96,17 @@ async def priority_schedule(request: ScheduleRequest):
     }
     """
     try:
-        tasks = request.tasks
-        current_time = datetime.now()
-        scheduled_tasks: List[ScheduledTask] = []
+        # Get schedules using both algorithms
+        greedy_schedule = greedy_job_scheduling(request.tasks)
+        activity_schedule = activity_selection(request.tasks)
         
-        # Build dependency graph
-        task_map: Dict[str, Task] = {task.id: task for task in tasks}
-        graph: Dict[str, Set[str]] = {task.id: set() for task in tasks}
-        in_degree: Dict[str, int] = {task.id: 0 for task in tasks}
-        
-        for task in tasks:
-            for dep in task.dependencies:
-                graph[dep].add(task.id)
-                in_degree[task.id] += 1
-        
-        # Priority queue for available tasks
-        # Priority is based on: (importance, -time_until_deadline)
-        pq: List[Tuple[float, str]] = []
-        
-        # Add tasks with no dependencies to the queue
-        for task in tasks:
-            if in_degree[task.id] == 0:
-                time_until_deadline = (task.deadline - current_time).total_seconds() / 60
-                priority = (task.importance, -time_until_deadline)
-                heappush(pq, (-priority[0], task.id))  # Negative for max heap
-        
-        while pq:
-            # Get highest priority task
-            _, task_id = heappop(pq)
-            task = task_map[task_id]
-            
-            # Schedule the task
-            scheduled_start = current_time
-            scheduled_end = scheduled_start + timedelta(minutes=task.duration)
-            
-            scheduled_task = ScheduledTask(
-                **task.dict(),
-                scheduled_start=scheduled_start,
-                scheduled_end=scheduled_end,
-                completion_status="pending"
-            )
-            
-            scheduled_tasks.append(scheduled_task)
-            current_time = scheduled_end
-            
-            # Update dependencies
-            for dependent in graph[task_id]:
-                in_degree[dependent] -= 1
-                if in_degree[dependent] == 0:
-                    dep_task = task_map[dependent]
-                    time_until_deadline = (dep_task.deadline - current_time).total_seconds() / 60
-                    priority = (dep_task.importance, -time_until_deadline)
-                    heappush(pq, (-priority[0], dependent))
-        
-        # Check if all tasks were scheduled
-        if len(scheduled_tasks) != len(tasks):
-            raise HTTPException(
-                status_code=400,
-                detail="Circular dependency detected in tasks"
-            )
-        
-        # Calculate metrics
-        total_duration = sum(task.duration for task in scheduled_tasks)
-        makespan = (scheduled_tasks[-1].scheduled_end - scheduled_tasks[0].scheduled_start).total_seconds() / 60
-        efficiency_score = sum(task.importance for task in scheduled_tasks) / len(scheduled_tasks)
+        # Choose the better schedule based on number of tasks completed
+        final_schedule = greedy_schedule if len(greedy_schedule) >= len(activity_schedule) else activity_schedule
         
         return ScheduleResponse(
-            scheduled_tasks=scheduled_tasks,
-            total_duration=total_duration,
-            makespan=makespan,
-            efficiency_score=efficiency_score
+            scheduled_tasks=final_schedule,
+            algorithm_used="greedy" if len(greedy_schedule) >= len(activity_schedule) else "activity_selection",
+            total_tasks_scheduled=len(final_schedule)
         )
-        
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e)) 
+        raise HTTPException(status_code=400, detail=str(e)) 

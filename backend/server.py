@@ -13,7 +13,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include routers
+# Include rouers
 app.include_router(greedy_scheduler.router, prefix="/api", tags=["scheduling"])
 app.include_router(topological_sort.router, prefix="/api", tags=["scheduling"])
 app.include_router(dynamic_programming.router, prefix="/api", tags=["scheduling"])

@@ -22,7 +22,7 @@ export default function TasksPage() {
   const [tasks, setTasks] = useState<any[]>([])
   const [filteredTasks, setFilteredTasks] = useState<any[]>([])
   const [searchQuery, setSearchQuery] = useState("")
-  const [categoryFilter, setCategoryFilter] = useState("all")
+  const [priorityFilter, setPriorityFilter] = useState("all")
   const [activeTab, setActiveTab] = useState("all")
   const [isLoading, setIsLoading] = useState(true)
   const { user } = useAuth()
@@ -36,7 +36,7 @@ export default function TasksPage() {
 
   useEffect(() => {
     filterTasks()
-  }, [tasks, searchQuery, categoryFilter, activeTab])
+  }, [tasks, searchQuery, priorityFilter, activeTab])
 
   const fetchTasks = async () => {
     if (!user) return
@@ -74,9 +74,9 @@ export default function TasksPage() {
       )
     }
 
-    // Filter by category
-    if (categoryFilter !== "all") {
-      filtered = filtered.filter((task) => task.category === categoryFilter)
+    // Filter by priority
+    if (priorityFilter !== "all") {
+      filtered = filtered.filter((task) => task.priority === priorityFilter)
     }
 
     // Filter by completion status
@@ -93,8 +93,8 @@ export default function TasksPage() {
     setSearchQuery(e.target.value)
   }
 
-  const handleCategoryFilterChange = (value: string) => {
-    setCategoryFilter(value)
+  const handlePriorityFilterChange = (value: string) => {
+    setPriorityFilter(value)
   }
 
   const handleTabChange = (value: string) => {
@@ -171,36 +171,6 @@ export default function TasksPage() {
     }
   }
 
-  // Group tasks by category
-  const groupedTasks = filteredTasks.reduce(
-    (acc, task) => {
-      const category = task.category || "other"
-      if (!acc[category]) {
-        acc[category] = []
-      }
-      acc[category].push(task)
-      return acc
-    },
-    {} as Record<string, any[]>,
-  )
-
-  const getCategoryName = (category: string) => {
-    switch (category) {
-      case "greedy":
-        return "Greedy Algorithms"
-      case "dp":
-        return "Dynamic Programming"
-      case "graphs":
-        return "Graphs"
-      case "recursion":
-        return "Recursion"
-      case "sorting":
-        return "Sorting & Searching"
-      default:
-        return "Other"
-    }
-  }
-
   return (
     <div className="flex flex-col gap-6 pb-16 md:pb-0">
       <div className="flex flex-col gap-2">
@@ -219,38 +189,18 @@ export default function TasksPage() {
           />
         </div>
         <div className="flex gap-2">
-          <Collapsible open={openFilter} onOpenChange={setOpenFilter} className="w-full space-y-2 sm:w-auto">
-            <div className="flex items-center justify-between space-x-4">
-              <CollapsibleTrigger asChild>
-                <Button variant="outline" className="w-full sm:w-auto rounded-xl gap-2">
-                  <Filter className="h-4 w-4" />
-                  Filter
-                </Button>
-              </CollapsibleTrigger>
-            </div>
-            <CollapsibleContent className="space-y-2">
-              <div className="rounded-xl border p-4">
-                <div className="space-y-2">
-                  <Label htmlFor="category-filter">Category</Label>
-                  <Select value={categoryFilter} onValueChange={handleCategoryFilterChange}>
-                    <SelectTrigger id="category-filter" className="rounded-xl">
-                      <SelectValue placeholder="All Categories" />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-xl">
-                      <SelectItem value="all">All Categories</SelectItem>
-                      <SelectItem value="greedy">Greedy Algorithms</SelectItem>
-                      <SelectItem value="dp">Dynamic Programming</SelectItem>
-                      <SelectItem value="graphs">Graphs</SelectItem>
-                      <SelectItem value="recursion">Recursion</SelectItem>
-                      <SelectItem value="sorting">Sorting & Searching</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </CollapsibleContent>
-          </Collapsible>
-
+          <Select value={priorityFilter} onValueChange={handlePriorityFilterChange}>
+            <SelectTrigger className="w-[120px] rounded-xl flex items-center gap-2">
+              <Filter className="h-4 w-4" />
+              <SelectValue placeholder="Priority" />
+            </SelectTrigger>
+            <SelectContent className="rounded-xl">
+              <SelectItem value="all">All</SelectItem>
+              <SelectItem value="high">High</SelectItem>
+              <SelectItem value="medium">Medium</SelectItem>
+              <SelectItem value="low">Low</SelectItem>
+            </SelectContent>
+          </Select>
           <AddTaskDialog onTaskAdded={handleTaskAdded}>
             <Button className="rounded-xl gap-2">
               <Plus className="h-4 w-4" />
@@ -283,7 +233,7 @@ export default function TasksPage() {
                 <div className="text-4xl mb-4">📝</div>
                 <h3 className="text-xl font-medium mb-2">No tasks found</h3>
                 <p className="text-muted-foreground text-center mb-4">
-                  {searchQuery || categoryFilter !== "all"
+                  {searchQuery || priorityFilter !== "all"
                     ? "Try changing your search or filter criteria"
                     : "Add your first task to get started"}
                 </p>
@@ -296,17 +246,15 @@ export default function TasksPage() {
               </CardContent>
             </Card>
           ) : (
-            Object.entries(groupedTasks).map(([category, tasks]) => (
-              <Card key={category} className="rounded-2xl border-border shadow-md">
-                <CardHeader className="pb-2">
-                  <CardTitle>{getCategoryName(category)}</CardTitle>
-                  <CardDescription>Tasks related to {category} problems</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <TaskList tasks={tasks as Task[]} onToggle={handleTaskToggle} />
-                </CardContent>
-              </Card>
-            ))
+            <Card className="rounded-2xl border-border shadow-md">
+              <CardHeader className="pb-2">
+                <CardTitle>Tasks</CardTitle>
+                <CardDescription>All your tasks</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <TaskList tasks={filteredTasks as Task[]} onToggle={handleTaskToggle} />
+              </CardContent>
+            </Card>
           )}
         </TabsContent>
         <TabsContent value="active" className="space-y-4">

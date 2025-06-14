@@ -6,6 +6,7 @@ import { useState } from "react"
 import { AlarmClockIcon as Alarm, SpaceIcon as Yoga } from "lucide-react"
 import { Check } from "lucide-react"
 import type { Habit } from "@/components/habit-list"
+import { markHabitComplete, unmarkHabitComplete, getHabitCompletions } from "@/lib/habitsApi"
 
 interface HabitWeeklyViewProps {
   habits: Habit[]
@@ -15,21 +16,24 @@ interface HabitWeeklyViewProps {
 export function HabitWeeklyView({ habits, setHabits }: HabitWeeklyViewProps) {
   const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 
-  const toggleDay = (habitId: string, day: string) => {
-    setHabits(
-      habits.map((habit) => {
-        if (habit.id === habitId) {
-          return {
-            ...habit,
-            days: {
-              ...habit.days,
-              [day.toLowerCase()]: !habit.days?.[day.toLowerCase()],
-            },
-          }
-        }
-        return habit
-      })
-    )
+  const toggleDay = async (habitId: string, day: string) => {
+    const today = new Date();
+    const dayIndex = ["mon","tue","wed","thu","fri","sat","sun"].indexOf(day.toLowerCase());
+    const date = new Date(today.setDate(today.getDate() - today.getDay() + 1 + dayIndex));
+    const dateStr = date.toISOString().slice(0, 10);
+    const habit = habits.find(h => h.id === habitId);
+    if (!habit) return;
+    const completed = habit.days?.[day.toLowerCase()];
+    if (completed) {
+      await unmarkHabitComplete(habitId, dateStr);
+    } else {
+      await markHabitComplete(habitId, dateStr);
+    }
+    // Re-fetch completions for all habits
+    Promise.all(habits.map(async (h) => {
+      const completions = await getHabitCompletions(h.id);
+      return { ...h, days: { ...h.days, [day.toLowerCase()]: completions.includes(dateStr) } };
+    })).then(setHabits);
   }
 
   return (
@@ -47,9 +51,9 @@ export function HabitWeeklyView({ habits, setHabits }: HabitWeeklyViewProps) {
                 <div key={day} className="flex flex-col items-center gap-1">
                   <span className="text-xs text-muted-foreground">{day}</span>
                   <button
-                    onClick={() => toggleDay(habit.id, day.toLowerCase())}
+                    onClick={() => toggleDay(habit.id, day)}
                     className={`flex h-10 w-10 items-center justify-center rounded-full border border-border transition-all hover:bg-primary/10 ${
-                      habit.days?.[day.toLowerCase()] ? "bg-primary text-primary-foreground" : "bg-transparent"
+                      habit.days?.[day.toLowerCase()] ? "bg-primary text-primary-foreground animate-checkmark" : "bg-transparent"
                     }`}
                   >
                     {habit.days?.[day.toLowerCase()] && <Check className="h-4 w-4" />}

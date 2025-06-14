@@ -27,7 +27,7 @@ function mapDbHabitToUiHabit(dbHabit: any): Habit {
   return {
     id: dbHabit.id,
     title: dbHabit.name,
-    icon: <span role="img" aria-label="Habit">🏷️</span>,
+    icon: <span role="img" aria-label="Habit">{dbHabit.icon}</span>,
     completed: dbHabit.completed ?? false,
     color: (dbHabit.color as Habit["color"]) || "violet",
     days: dbHabit.days,
@@ -41,7 +41,7 @@ export function AddHabitDialog({ setHabits }: { setHabits: React.Dispatch<React.
   const [open, setOpen] = useState(false)
   const [selectedDays, setSelectedDays] = useState<string[]>(["mon", "tue", "wed", "thu", "fri"])
   const [title, setTitle] = useState("")
-  const [icon, setIcon] = useState(<Dumbbell className="h-5 w-5" />)
+  const [icon, setIcon] = useState("dumbbell")
   const [color, setColor] = useState("violet")
 
   const toggleDay = (day: string) => {
@@ -64,7 +64,7 @@ export function AddHabitDialog({ setHabits }: { setHabits: React.Dispatch<React.
 
   const handleSave = async () => {
     if (!title || !user) return;
-    const dbHabit = await addHabit(user.id, { name: title, color });
+    const dbHabit = await addHabit(user.id, { name: title, color, icon });
     setHabits(habits => [mapDbHabitToUiHabit(dbHabit), ...habits]);
     setTitle("");
     setOpen(false);
@@ -89,36 +89,13 @@ export function AddHabitDialog({ setHabits }: { setHabits: React.Dispatch<React.
           </div>
           <div className="grid gap-2">
             <Label htmlFor="icon">Icon</Label>
-            <div className="flex flex-wrap gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                className="rounded-full h-10 w-10 bg-primary/10 border-primary/20"
-              >
-                <Dumbbell className="h-5 w-5" />
-                <span className="sr-only">Exercise</span>
-              </Button>
-              <Button type="button" variant="outline" size="icon" className="rounded-full h-10 w-10">
-                <BookOpen className="h-5 w-5" />
-                <span className="sr-only">Reading</span>
-              </Button>
-              <Button type="button" variant="outline" size="icon" className="rounded-full h-10 w-10">
-                <Coffee className="h-5 w-5" />
-                <span className="sr-only">Coffee</span>
-              </Button>
-              <Button type="button" variant="outline" size="icon" className="rounded-full h-10 w-10">
-                <Brain className="h-5 w-5" />
-                <span className="sr-only">Learning</span>
-              </Button>
-              <Button type="button" variant="outline" size="icon" className="rounded-full h-10 w-10">
-                <Heart className="h-5 w-5" />
-                <span className="sr-only">Health</span>
-              </Button>
-              <Button type="button" variant="outline" size="icon" className="rounded-full h-10 w-10">
-                <Droplet className="h-5 w-5" />
-                <span className="sr-only">Water</span>
-              </Button>
+            <div className="flex gap-2 mb-2">
+              <button type="button" className={`rounded-full p-2 ${icon === "book" ? "bg-primary/20" : ""}`} onClick={() => setIcon("book")}>📖</button>
+              <button type="button" className={`rounded-full p-2 ${icon === "dumbbell" ? "bg-primary/20" : ""}`} onClick={() => setIcon("dumbbell")}>🏋️</button>
+              <button type="button" className={`rounded-full p-2 ${icon === "coffee" ? "bg-primary/20" : ""}`} onClick={() => setIcon("coffee")}>☕</button>
+              <button type="button" className={`rounded-full p-2 ${icon === "brain" ? "bg-primary/20" : ""}`} onClick={() => setIcon("brain")}>🧠</button>
+              <button type="button" className={`rounded-full p-2 ${icon === "heart" ? "bg-primary/20" : ""}`} onClick={() => setIcon("heart")}>❤️</button>
+              <button type="button" className={`rounded-full p-2 ${icon === "droplet" ? "bg-primary/20" : ""}`} onClick={() => setIcon("droplet")}>💧</button>
             </div>
           </div>
           <div className="grid gap-2">

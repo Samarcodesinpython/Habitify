@@ -4,9 +4,10 @@ import type React from "react"
 
 import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { Check, AlarmClockIcon as Alarm, Sun, Droplet, Phone, Dumbbell, SpaceIcon as Yoga } from "lucide-react"
+import { Check, AlarmClockIcon as Alarm, Sun, Droplet, Phone, Dumbbell, SpaceIcon as Yoga, BookOpen, Coffee, Brain, Heart } from "lucide-react"
 import { useAuth } from "@/components/auth-provider"
 import { updateHabit, deleteHabit, markHabitComplete, unmarkHabitComplete, getHabitCompletions } from "@/lib/habitsApi"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 
 export type Habit = {
   id: string
@@ -25,25 +26,43 @@ interface HabitListProps {
 }
 
 function mapDbHabitToUiHabit(dbHabit: any): Habit {
+  let icon: React.ReactNode = null;
+  switch (dbHabit.icon) {
+    case "dumbbell":
+      icon = <Dumbbell className="h-5 w-5" />;
+      break;
+    case "book":
+      icon = <BookOpen className="h-5 w-5" />;
+      break;
+    case "coffee":
+      icon = <Coffee className="h-5 w-5" />;
+      break;
+    case "brain":
+      icon = <Brain className="h-5 w-5" />;
+      break;
+    case "heart":
+      icon = <Heart className="h-5 w-5" />;
+      break;
+    case "droplet":
+      icon = <Droplet className="h-5 w-5" />;
+      break;
+    default:
+      icon = <Dumbbell className="h-5 w-5" />;
+  }
   return {
     id: dbHabit.id,
     title: dbHabit.name,
-    icon: <span role="img" aria-label="Habit">🏷️</span>,
+    icon,
     completed: dbHabit.completed ?? false,
     color: (dbHabit.color as Habit["color"]) || "violet",
     days: dbHabit.days,
     frequency: dbHabit.frequency,
     completionDates: dbHabit.completionDates,
-  }
+  };
 }
 
 export function HabitList({ habits = [], setHabits }: HabitListProps) {
   const { user } = useAuth();
-  // For touch/swipe functionality
-  const [swipingId, setSwipingId] = useState<string | null>(null)
-  const touchStartX = useRef<number | null>(null)
-  const touchEndX = useRef<number | null>(null)
-  const minSwipeDistance = 50
 
   // On mount or when habits change, fetch completions for today
   useEffect(() => {
@@ -75,40 +94,6 @@ export function HabitList({ habits = [], setHabits }: HabitListProps) {
     setHabits(habits.filter((habit) => habit.id !== id));
   }
 
-  const onTouchStart = (e: React.TouchEvent, id: string) => {
-    touchStartX.current = e.targetTouches[0].clientX
-  }
-
-  const onTouchMove = (e: React.TouchEvent, id: string) => {
-    touchEndX.current = e.targetTouches[0].clientX
-
-    if (touchStartX.current && touchEndX.current) {
-      const distance = touchStartX.current - touchEndX.current
-
-      if (distance > minSwipeDistance) {
-        setSwipingId(id)
-      } else {
-        setSwipingId(null)
-      }
-    }
-  }
-
-  const onTouchEnd = (e: React.TouchEvent, id: string) => {
-    if (!touchStartX.current || !touchEndX.current) return
-
-    const distance = touchStartX.current - touchEndX.current
-
-    if (distance > minSwipeDistance * 2) {
-      // Complete the habit if swiped far enough
-      toggleHabit(id)
-    }
-
-    // Reset
-    touchStartX.current = null
-    touchEndX.current = null
-    setSwipingId(null)
-  }
-
   // Complete all habits
   const completeAllHabits = async () => {
     if (!user) return;
@@ -134,39 +119,28 @@ export function HabitList({ habits = [], setHabits }: HabitListProps) {
       {habits.map((habit) => (
         <div
           key={habit.id}
-          className={`habit-item-sm habit-item ${habit.completed ? "completed" : ""} ${swipingId === habit.id ? "swiping" : ""}`}
-          onTouchStart={(e) => onTouchStart(e, habit.id)}
-          onTouchMove={(e) => onTouchMove(e, habit.id)}
-          onTouchEnd={(e) => onTouchEnd(e, habit.id)}
+          className={`habit-item-sm habit-item ${habit.completed ? "completed" : ""}`}
         >
           <div className={`habit-card habit-card-sm ${habit.completed ? "habit-card-mint" : `habit-card-${habit.color}`} group`}>
-            {habit.completed ? (
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-mint text-white animate-checkmark">
-                <Check className="h-5 w-5" />
-              </div>
-            ) : (
-              <div className="flex h-8 w-8 items-center justify-center">{habit.icon}</div>
-            )}
+            <div className="flex h-8 w-8 items-center justify-center">{habit.icon}</div>
             <span className="ml-3 flex-1 font-medium text-sm">{habit.title}</span>
             <div className="flex items-center gap-2 opacity-0 transition-opacity group-hover:opacity-100">
               <Button variant="ghost" size="sm" className="h-8 w-8 rounded-full p-0" onClick={() => toggleHabit(habit.id)}>
                 <Check className="h-4 w-4" />
                 <span className="sr-only">Complete</span>
               </Button>
-              <Button variant="ghost" size="sm" className="h-8 w-8 rounded-full p-0" onClick={() => skipHabit(habit.id)}>
-                <span className="sr-only">Skip</span>
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>
-              </Button>
-              <Button variant="ghost" size="sm" className="h-8 w-8 rounded-full p-0" onClick={() => {/* edit handler */}}>
-                <span role="img" aria-label="Edit">✏️</span>
-              </Button>
-              <Button variant="ghost" size="sm" className="h-8 w-8 rounded-full p-0" onClick={() => setHabits(habits.filter(h => h.id !== habit.id))}>
-                <span role="img" aria-label="Delete">🗑️</span>
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="h-8 w-8 rounded-full p-0">
+                    <span role="img" aria-label="More">⋮</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem onClick={() => {/* edit handler */}}>Edit</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setHabits(habits.filter(h => h.id !== habit.id))}>Delete</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
-          </div>
-          <div className="swipe-action">
-            <Check className="h-5 w-5" />
           </div>
         </div>
       ))}

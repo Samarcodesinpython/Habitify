@@ -31,7 +31,6 @@ export function AddTaskDialog({ children, onTaskAdded }: AddTaskDialogProps) {
   const [open, setOpen] = useState(false)
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
-  const [category, setCategory] = useState("other")
   const [priority, setPriority] = useState("medium")
   const [timeEstimate, setTimeEstimate] = useState("30")
   const [energyLevel, setEnergyLevel] = useState("medium")
@@ -52,7 +51,6 @@ export function AddTaskDialog({ children, onTaskAdded }: AddTaskDialogProps) {
         user_id: user.id,
         title,
         description,
-        category,
         priority,
         time_estimate: Number.parseInt(timeEstimate),
         energy_level: energyLevel,
@@ -78,7 +76,6 @@ export function AddTaskDialog({ children, onTaskAdded }: AddTaskDialogProps) {
       // Reset form
       setTitle("")
       setDescription("")
-      setCategory("other")
       setPriority("medium")
       setTimeEstimate("30")
       setEnergyLevel("medium")
@@ -167,22 +164,6 @@ export function AddTaskDialog({ children, onTaskAdded }: AddTaskDialogProps) {
               onChange={(e) => setTitle(e.target.value)}
               required
             />
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="category">Category</Label>
-            <Select value={category} onValueChange={setCategory}>
-              <SelectTrigger id="category" className="rounded-xl">
-                <SelectValue placeholder="Select category" />
-              </SelectTrigger>
-              <SelectContent className="rounded-xl">
-                <SelectItem value="greedy">Greedy Algorithms</SelectItem>
-                <SelectItem value="dp">Dynamic Programming</SelectItem>
-                <SelectItem value="graphs">Graphs</SelectItem>
-                <SelectItem value="recursion">Recursion</SelectItem>
-                <SelectItem value="sorting">Sorting & Searching</SelectItem>
-                <SelectItem value="other">Other</SelectItem>
-              </SelectContent>
-            </Select>
           </div>
           <div className="grid gap-2">
             <Label htmlFor="notes">Description</Label>

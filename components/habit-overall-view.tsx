@@ -50,7 +50,7 @@ export function HabitOverallView({ habits = [] }: { habits: Habit[] }) {
                         <Tooltip key={dateStr}>
                           <TooltipTrigger asChild>
                             <div
-                              className={`w-3 h-3 rounded-full border flex items-center justify-center transition-colors ${completed ? "bg-teal-500 border-teal-500" : "bg-gray-200 border-gray-200"}`}
+                              className={`w-3 h-3 rounded-full border flex items-center justify-center transition-colors ${completed ? "bg-teal-500 border-teal-500 animate-checkmark" : "bg-gray-200 border-gray-200"}`}
                             ></div>
                           </TooltipTrigger>
                           <TooltipContent>

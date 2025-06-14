@@ -276,22 +276,6 @@
     100% { transform: scale(1); opacity: 1; }
   }
 
-  .swipe-action {
-    @apply absolute inset-y-0 right-0 flex items-center justify-center px-4 bg-green-500 text-white rounded-r-xl transform translate-x-full transition-transform duration-200;
-  }
-
-  .habit-item {
-    @apply relative overflow-hidden;
-  }
-
-  .habit-item.swiping .swipe-action {
-    @apply translate-x-0;
-  }
-
-  .habit-item.completed {
-    @apply animate-slideRight;
-  }
-
   .month-divider {
     @apply h-px bg-border my-4;
   }
