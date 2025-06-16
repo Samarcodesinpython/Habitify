@@ -1,9 +1,47 @@
+"use client";
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { ArrowRight, CheckCircle2, Clock, BarChart3, Calendar } from "lucide-react"
+import { useEffect, useState } from "react"
+import axios from "axios"
+
+// Example static tasks array (replace with dynamic source as needed)
+const tasks = [
+  {
+    id: "task1",
+    name: "Complete Project",
+    priority: "high",
+    time_estimate: 120,
+    energy_level: "high",
+  },
+  {
+    id: "task2",
+    name: "Read Book",
+    priority: "medium",
+    time_estimate: 60,
+    energy_level: "medium",
+  },
+  // Add more tasks as needed
+]
 
 export default function Home() {
+  const [scheduledTasks, setScheduledTasks] = useState([])
+
+  useEffect(() => {
+    const fetchScheduledTasks = async () => {
+      try {
+        const response = await axios.post("http://localhost:8000/api/greedy", { tasks })
+        setScheduledTasks(response.data.scheduled_tasks)
+      } catch (error) {
+        console.error("Failed to fetch scheduled tasks:", error)
+      }
+    }
+    fetchScheduledTasks()
+    const interval = setInterval(fetchScheduledTasks, 5000) // Poll every 5 seconds
+    return () => clearInterval(interval)
+  }, [])
+
   return (
     <div className="flex min-h-screen flex-col">
       <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -53,6 +91,23 @@ export default function Home() {
 
         <section className="container py-16 md:py-24">
           <h2 className="text-center text-3xl font-bold mb-16">Features</h2>
+          {/* Scheduled Tasks Display */}
+          <div className="mb-8">
+            <h3 className="text-xl font-bold mb-4">Scheduled Tasks (Real-Time)</h3>
+            <ul className="space-y-2">
+              {scheduledTasks.map((task: any) => (
+                <li key={task.id} className="border rounded-lg p-4 flex flex-col md:flex-row md:items-center md:justify-between">
+                  <span className="font-semibold">{task.name}</span>
+                  <span>Priority: {task.priority}</span>
+                  <span>Energy: {task.energy_level}</span>
+                  <span>Time: {task.time_estimate} min</span>
+                  <span>Start: {new Date(task.scheduled_start).toLocaleString()}</span>
+                  <span>End: {new Date(task.scheduled_end).toLocaleString()}</span>
+                  <span>Status: {task.completion_status}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             <div className="rounded-2xl border border-border bg-violet/10 p-6 shadow-md transition-all duration-300 hover:shadow-lg">
               <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary">
