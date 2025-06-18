@@ -43,6 +43,8 @@ export function AddHabitDialog({ setHabits }: { setHabits: React.Dispatch<React.
   const [title, setTitle] = useState("")
   const [icon, setIcon] = useState("dumbbell")
   const [color, setColor] = useState("violet")
+  const [frequency, setFrequency] = useState("daily")
+  const [notes, setNotes] = useState("")
 
   const toggleDay = (day: string) => {
     if (selectedDays.includes(day)) {
@@ -64,9 +66,18 @@ export function AddHabitDialog({ setHabits }: { setHabits: React.Dispatch<React.
 
   const handleSave = async () => {
     if (!title || !user) return;
-    const dbHabit = await addHabit(user.id, { name: title, color, icon });
+    const dbHabit = await addHabit(user.id, {
+      name: title,
+      color,
+      frequency
+    });
     setHabits(habits => [mapDbHabitToUiHabit(dbHabit), ...habits]);
     setTitle("");
+    setIcon("dumbbell");
+    setColor("violet");
+    setSelectedDays(["mon", "tue", "wed", "thu", "fri"]);
+    setFrequency("daily");
+    setNotes("");
     setOpen(false);
   }
 
@@ -100,7 +111,7 @@ export function AddHabitDialog({ setHabits }: { setHabits: React.Dispatch<React.
           </div>
           <div className="grid gap-2">
             <Label htmlFor="frequency">Frequency</Label>
-            <Select defaultValue="daily">
+            <Select value={frequency} onValueChange={setFrequency} defaultValue="daily">
               <SelectTrigger id="frequency" className="rounded-xl">
                 <SelectValue placeholder="Select frequency" />
               </SelectTrigger>
@@ -131,7 +142,7 @@ export function AddHabitDialog({ setHabits }: { setHabits: React.Dispatch<React.
           </div>
           <div className="grid gap-2">
             <Label htmlFor="notes">Notes (Optional)</Label>
-            <Textarea id="notes" placeholder="Add any additional notes here" className="rounded-xl" />
+            <Textarea id="notes" placeholder="Add any additional notes here" className="rounded-xl" value={notes} onChange={e => setNotes(e.target.value)} />
           </div>
           <div className="flex items-center justify-between">
             <Label htmlFor="reminder" className="text-base">

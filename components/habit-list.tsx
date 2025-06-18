@@ -25,6 +25,19 @@ interface HabitListProps {
   setHabits: React.Dispatch<React.SetStateAction<Habit[]>>
 }
 
+const completedBg: Record<string, string> = {
+  violet: "bg-blue-100",
+  mint: "bg-blue-100",
+  peach: "bg-blue-100",
+  rose: "bg-blue-100",
+};
+const completedText: Record<string, string> = {
+  violet: "text-blue-900",
+  mint: "text-blue-900",
+  peach: "text-blue-900",
+  rose: "text-blue-900",
+};
+
 function mapDbHabitToUiHabit(dbHabit: any): Habit {
   let icon: React.ReactNode = null;
   switch (dbHabit.icon) {
@@ -121,12 +134,23 @@ export function HabitList({ habits = [], setHabits }: HabitListProps) {
           key={habit.id}
           className={`habit-item-sm habit-item ${habit.completed ? "completed" : ""}`}
         >
-          <div className={`habit-card habit-card-sm ${habit.completed ? "habit-card-mint" : `habit-card-${habit.color}`} group`}>
+          <div
+            className={`habit-card habit-card-sm group transition-colors duration-200 ${
+              habit.completed
+                ? `${completedBg[habit.color]} ${completedText[habit.color]}`
+                : `habit-card-${habit.color} bg-white text-black`
+            }`}
+          >
             <div className="flex h-8 w-8 items-center justify-center">{habit.icon}</div>
             <span className="ml-3 flex-1 font-medium text-sm">{habit.title}</span>
             <div className="flex items-center gap-2 opacity-0 transition-opacity group-hover:opacity-100">
-              <Button variant="ghost" size="sm" className="h-8 w-8 rounded-full p-0" onClick={() => toggleHabit(habit.id)}>
-                <Check className="h-4 w-4" />
+              <Button
+                variant="ghost"
+                size="sm"
+                className={`h-8 w-8 rounded-full p-0 ${habit.completed ? "bg-green-500 text-white" : ""}`}
+                onClick={() => toggleHabit(habit.id)}
+              >
+                <Check className={`h-4 w-4 ${habit.completed ? "text-white" : "text-muted-foreground"}`} />
                 <span className="sr-only">Complete</span>
               </Button>
               <DropdownMenu>
