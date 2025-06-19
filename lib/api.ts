@@ -42,4 +42,9 @@ export const schedulingApi = {
   },
 }
 
+export const getEfficientSelection = async (userId: string) => {
+  const res = await fetch(`/api/efficient-selection?user_id=${userId}`);
+  return res.json();
+};
+
 export type { Task, ScheduleResponse }; 

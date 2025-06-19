@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
@@ -9,6 +9,7 @@ import Link from "next/link"
 import { getClientSupabaseInstance } from "@/lib/supabase"
 import { useAuth } from "@/components/auth-provider"
 import { useToast } from "@/hooks/use-toast"
+import { getEfficientSelection } from "@/lib/api"
 
 export type Task = {
   id: string
@@ -26,11 +27,19 @@ interface TaskListProps {
   onToggle?: (id: string, completed: boolean) => void
 }
 
+type AnalysisResult = { task: string; status: string; [key: string]: any };
+
 export function TaskList({ tasks, limit, onToggle }: TaskListProps) {
   const [localTasks, setLocalTasks] = useState<Task[]>(tasks)
   const { user } = useAuth()
   const supabase = getClientSupabaseInstance()
   const { toast } = useToast()
+  const [analysis, setAnalysis] = useState<AnalysisResult[]>([])
+
+  useEffect(() => {
+    if (!user) return;
+    getEfficientSelection(user.id).then(data => setAnalysis(data.analysis));
+  }, [tasks, user]);
 
   const toggleTask = async (id: string) => {
     const task = localTasks.find((t) => t.id === id)
@@ -140,6 +149,26 @@ export function TaskList({ tasks, limit, onToggle }: TaskListProps) {
     }
   }
 
+  const getStatus = (taskName: string) => {
+    const found = analysis.find(a => a.task === taskName)
+    return found ? found.status : ""
+  }
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "feasible":
+        return "bg-green-100 text-green-800 border-green-300";
+      case "impossible":
+        return "bg-red-100 text-red-800 border-red-300";
+      case "skip":
+        return "bg-gray-100 text-gray-800 border-gray-300";
+      case "reschedule":
+        return "bg-yellow-100 text-yellow-800 border-yellow-300";
+      default:
+        return "bg-blue-100 text-blue-800 border-blue-300";
+    }
+  };
+
   const displayTasks = limit ? localTasks.slice(0, limit) : localTasks
 
   return (
@@ -166,6 +195,11 @@ export function TaskList({ tasks, limit, onToggle }: TaskListProps) {
                   {task.priority && (
                     <Badge variant="outline" className={`${getPriorityColor(task.priority)}`}>
                       {task.priority}
+                    </Badge>
+                  )}
+                  {getStatus(task.title) && (
+                    <Badge variant="outline" className={`ml-1 ${getStatusColor(getStatus(task.title))}`}>
+                      {getStatus(task.title)}
                     </Badge>
                   )}
                 </div>
